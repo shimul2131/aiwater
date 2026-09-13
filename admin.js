@@ -1,15 +1,13 @@
 (() => {
-  const cfg = window.SITE_CONFIG || {};
-  const ADMIN_PASSWORD = String(
-    (cfg.admin && cfg.admin.password) || "fres1234"
-  ).trim();
+  // Password is never printed on the login page.
+  // Kept split so it is not obvious in HTML; change by editing these parts.
+  const ADMIN_PASSWORD = ["fres", "1234"].join("");
 
   // Elements
   const loginScreen = document.getElementById('login-screen');
   const dashboardScreen = document.getElementById('dashboard-screen');
   const loginForm = document.getElementById('login-form');
   const adminPassInput = document.getElementById('admin-pass');
-  const btnTogglePass = document.getElementById('btn-toggle-pass');
   const loginError = document.getElementById('login-error');
   const btnLogout = document.getElementById('btn-logout');
 
@@ -116,46 +114,64 @@
   }
 
   function showLogin() {
-    if (loginScreen) loginScreen.hidden = false;
-    if (dashboardScreen) dashboardScreen.hidden = true;
+    if (loginScreen) {
+      loginScreen.hidden = false;
+      loginScreen.style.display = "";
+    }
+    if (dashboardScreen) {
+      dashboardScreen.hidden = true;
+      dashboardScreen.style.display = "none";
+    }
     if (pollTimer) clearInterval(pollTimer);
   }
 
   function showDashboard() {
-    if (loginScreen) loginScreen.hidden = true;
-    if (dashboardScreen) dashboardScreen.hidden = false;
+    if (loginScreen) {
+      loginScreen.hidden = true;
+      loginScreen.style.display = "none";
+    }
+    if (dashboardScreen) {
+      dashboardScreen.hidden = false;
+      dashboardScreen.style.display = "";
+    }
     fetchOrders(true);
     startPolling();
-    if (typeof fetchAdminReviews === 'function') fetchAdminReviews();
+    if (typeof fetchAdminReviews === "function") fetchAdminReviews();
   }
 
-  if (btnTogglePass && adminPassInput) {
-    btnTogglePass.addEventListener('click', () => {
-      const isPass = adminPassInput.type === 'password';
-      adminPassInput.type = isPass ? 'text' : 'password';
-      btnTogglePass.textContent = isPass ? '🙈' : '👁';
-    });
-  }
-
-  if (loginForm) {
-    loginForm.addEventListener('submit', (e) => {
-      e.preventDefault();
-      const entered = String(adminPassInput.value || '')
-        .trim()
-        .replace(/\u200b/g, ''); // strip zero-width chars from mobile copy/paste
-      if (entered === ADMIN_PASSWORD) {
-        sessionStorage.setItem('ai_controller_admin_auth', 'true');
-        if (loginError) loginError.hidden = true;
-        showDashboard();
-      } else {
+  if (loginForm && adminPassInput) {
+    function tryLogin(e) {
+      if (e) e.preventDefault();
+      try {
+        const entered = String(adminPassInput.value || "")
+          .trim()
+          .replace(/\u200b/g, "")
+          .replace(/\s+/g, "");
+        if (entered === ADMIN_PASSWORD) {
+          sessionStorage.setItem("ai_controller_admin_auth", "true");
+          if (loginError) loginError.hidden = true;
+          showDashboard();
+        } else {
+          if (loginError) {
+            loginError.hidden = false;
+            loginError.textContent = "❌ ভুল পাসওয়ার্ড! আবার চেষ্টা করুন।";
+          }
+          adminPassInput.focus();
+          adminPassInput.select();
+        }
+      } catch (err) {
         if (loginError) {
           loginError.hidden = false;
-          loginError.textContent = '❌ ভুল পাসওয়ার্ড! আবার চেষ্টা করুন।';
+          loginError.textContent = "❌ লগইন সমস্যা। পেজ রিফ্রেশ করে আবার চেষ্টা করুন।";
         }
-        adminPassInput.focus();
-        adminPassInput.select();
       }
-    });
+    }
+
+    loginForm.addEventListener("submit", tryLogin);
+    const btnLogin = document.getElementById("btn-login");
+    if (btnLogin) {
+      btnLogin.addEventListener("click", tryLogin);
+    }
   }
 
   if (btnLogout) {
