@@ -4,7 +4,7 @@
   "version": "1.0.0",
   "description": "AI Water Controller landing page — FR Engineering Solutions",
   "scripts": {
-    "start": "npx --yes serve -l 5173",
-    "dev": "npx --yes serve -l 5173"
+    "start": "node server.js",
+    "dev": "node server.js"
   }
 }

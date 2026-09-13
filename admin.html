@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>অ্যাডমিন প্যানেল — AI Water Controller</title>
+  <link rel="icon" href="assets/app_icon.png" type="image/png" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap"
+    rel="stylesheet"
+  />
+  <link rel="stylesheet" href="admin.css" />
+</head>
+<body>
+  <!-- Login Screen -->
+  <div class="login-wrapper" id="login-screen">
+    <div class="login-card">
+      <div class="login-header">
+        <img src="assets/app_icon.png" alt="Logo" class="login-logo" />
+        <h2>অ্যাডমিন প্যানেল</h2>
+        <p>AI Water Controller অর্ডার ম্যানেজমেন্ট</p>
+      </div>
+
+      <form id="login-form">
+        <div class="form-group">
+          <label for="admin-pass">অ্যাডমিন পাসওয়ার্ড দিন</label>
+          <div class="pass-input-row">
+            <input
+              type="password"
+              id="admin-pass"
+              placeholder="পাসওয়ার্ড লিখুন..."
+              required
+              autocomplete="current-password"
+            />
+            <button type="button" class="btn-toggle-pass" id="btn-toggle-pass" aria-label="পাসওয়ার্ড দেখুন">👁</button>
+          </div>
+          <small class="hint-text">পাসওয়ার্ড: <code>fres1234</code> (site-config.js এ পরিবর্তনযোগ্য)</small>
+        </div>
+
+        <p class="login-error" id="login-error" hidden>❌ ভুল পাসওয়ার্ড! আবার চেষ্টা করুন।</p>
+
+        <button type="submit" class="btn-login" id="btn-login">
+          লগইন করুন →
+        </button>
+      </form>
+
+      <div class="login-footer">
+        <a href="index.html">← মূল ওয়েবসাইট-এ ফিরে যান</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- Admin Dashboard -->
+  <div class="dashboard-wrapper" id="dashboard-screen" hidden>
+    <!-- Top Navigation Bar -->
+    <header class="admin-topbar">
+      <div class="topbar-left">
+        <img src="assets/app_icon.png" alt="" class="topbar-logo" />
+        <div>
+          <h1 class="topbar-title">অর্ডার ড্যাশবোর্ড</h1>
+          <p class="topbar-subtitle">AI Water Controller — FR Engineering</p>
+        </div>
+      </div>
+
+      <div class="topbar-right">
+        <div class="live-indicator" id="live-indicator" title="রিয়েলটাইম সংযোগ সক্রিয়">
+          <span class="live-dot"></span>
+          <span>লাইভ</span>
+        </div>
+        <button type="button" class="btn-icon-action" id="btn-sound-toggle" title="সাউন্ড নোটিফিকেশন">
+          <span id="sound-icon">🔊</span>
+        </button>
+        <button type="button" class="btn-icon-action" id="btn-manual-refresh" title="নতুন অর্ডার চেক করুন">
+          🔄 রিফ্রেশ
+        </button>
+        <a href="index.html" target="_blank" class="btn-topbar-link">
+          🌐 ওয়েবসাইট
+        </a>
+        <button type="button" class="btn-logout" id="btn-logout" title="লগআউট">
+          🚪 লগআউট
+        </button>
+      </div>
+    </header>
+
+    <!-- Main Content Container -->
+    <main class="admin-main container">
+      <!-- Notification Toast Container -->
+      <div id="toast-container" class="toast-container"></div>
+
+      <!-- KPI Summary Cards -->
+      <section class="stats-grid">
+        <div class="stat-card stat-total">
+          <div class="stat-icon">📦</div>
+          <div class="stat-info">
+            <span class="stat-label">মোট অর্ডার</span>
+            <strong class="stat-value" id="kpi-total">0</strong>
+          </div>
+        </div>
+
+        <div class="stat-card stat-pending">
+          <div class="stat-icon">⏳</div>
+          <div class="stat-info">
+            <span class="stat-label">অপেক্ষমান (পেন্ডিং)</span>
+            <strong class="stat-value" id="kpi-pending">0</strong>
+          </div>
+          <span class="stat-badge-pulse" id="kpi-pending-badge" hidden>নতুন</span>
+        </div>
+
+        <div class="stat-card stat-confirmed">
+          <div class="stat-icon">✅</div>
+          <div class="stat-info">
+            <span class="stat-label">কনফার্মড অর্ডার</span>
+            <strong class="stat-value" id="kpi-confirmed">0</strong>
+          </div>
+        </div>
+
+        <div class="stat-card stat-delivered">
+          <div class="stat-icon">🚚</div>
+          <div class="stat-info">
+            <span class="stat-label">ডেলিভার্ড</span>
+            <strong class="stat-value" id="kpi-delivered">0</strong>
+          </div>
+        </div>
+
+        <div class="stat-card stat-revenue">
+          <div class="stat-icon">💰</div>
+          <div class="stat-info">
+            <span class="stat-label">কনফার্মড বিক্রয়</span>
+            <strong class="stat-value" id="kpi-revenue">৳০</strong>
+          </div>
+        </div>
+      </section>
+
+      <!-- Filter Tabs and Search Bar -->
+      <section class="toolbar-section">
+        <div class="filter-tabs" id="filter-tabs">
+          <button type="button" class="filter-tab is-active" data-filter="all">
+            সব অর্ডার (<span id="count-all">0</span>)
+          </button>
+          <button type="button" class="filter-tab" data-filter="pending">
+            ⏳ পেন্ডিং (<span id="count-pending">0</span>)
+          </button>
+          <button type="button" class="filter-tab" data-filter="confirmed">
+            ✅ কনফার্মড (<span id="count-confirmed">0</span>)
+          </button>
+          <button type="button" class="filter-tab" data-filter="delivered">
+            🚚 ডেলিভার্ড (<span id="count-delivered">0</span>)
+          </button>
+          <button type="button" class="filter-tab" data-filter="cancelled">
+            ❌ বাতিল (<span id="count-cancelled">0</span>)
+          </button>
+        </div>
+
+        <div class="search-box">
+          <span class="search-icon">🔍</span>
+          <input
+            type="search"
+            id="order-search"
+            placeholder="নাম, ফোন নম্বর বা অর্ডার আইডি দিয়ে খুঁজুন..."
+            aria-label="অর্ডার খুঁজুন"
+          />
+          <button type="button" class="btn-clear-search" id="btn-clear-search" hidden aria-label="সার্চ মুছুন">✕</button>
+        </div>
+      </section>
+
+      <!-- Order List Container -->
+      <section class="orders-section">
+        <!-- Empty State -->
+        <div class="empty-state" id="orders-empty" hidden>
+          <div class="empty-icon">📭</div>
+          <h3>কোনো অর্ডার পাওয়া যায়নি</h3>
+          <p id="empty-message">এখনও কোনো গ্রাহক অর্ডার করেননি। গ্রাহক অর্ডার করলেই এখানে চলে আসবে।</p>
+        </div>
+
+        <!-- Orders Grid / Cards -->
+        <div class="orders-grid" id="orders-grid">
+          <!-- Rendered dynamically via admin.js -->
+        </div>
+      </section>
+
+      <!-- Customer Reviews Manager -->
+      <section class="reviews-admin-section" id="reviews-admin">
+        <div class="reviews-admin-head">
+          <div>
+            <h2>কাস্টমার কমেন্ট স্লাইডশো</h2>
+            <p>WhatsApp/Messenger কমেন্টের স্ক্রিনশট আপলোড করুন — ওয়েবসাইটে অটো স্লাইড হবে</p>
+          </div>
+        </div>
+
+        <form class="reviews-upload-box" id="review-upload-form">
+          <label class="reviews-file-label" for="review-file-input">
+            📷 স্ক্রিনশট সিলেক্ট করুন (PNG / JPG)
+            <input type="file" id="review-file-input" accept="image/png,image/jpeg,image/webp,image/gif" required />
+          </label>
+          <input
+            type="text"
+            id="review-alt-input"
+            placeholder="ঐচ্ছিক ক্যাপশন (যেমন: কাস্টমার রিভিউ)"
+          />
+          <button type="submit" class="btn-upload-review" id="btn-upload-review">
+            ✓ আপলোড ও সাইটে যোগ করুন
+          </button>
+          <p class="reviews-upload-hint">
+            অথবা `assets/reviews/` ফোল্ডারে ছবি রেখে `site-config.js` এর `reviews` তালিকায় পাথ যোগ করতে পারেন।
+          </p>
+        </form>
+
+        <div class="reviews-admin-grid" id="reviews-admin-grid"></div>
+        <p class="reviews-admin-empty" id="reviews-admin-empty" hidden>এখনও কোনো কমেন্ট স্ক্রিনশট নেই।</p>
+      </section>
+    </main>
+
+    <!-- Footer -->
+    <footer class="admin-footer">
+      <p>AI Water Controller Admin Management Portal · FR Engineering Solutions</p>
+    </footer>
+  </div>
+
+  <!-- Audio Element for Order Chime (Base64 short pleasant chime) -->
+  <audio id="order-sound" preload="auto">
+    <source src="data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YVoGAACBhYqFbF1fdJivrJBhNjVgodDbqWE2MDCe2e/HXi8uLaPV6NRPKywtotXt0k0rLC2j1e7TTSsrLaLU7dNNKywtotXt000rLC2i1e3TTSsrLaPV79VPKywtotXt1E0rLC2i1e3UTyssLaLV7dRPKywtotXt1E8rLC2j1e3UTyssLaLV7dRPKywt" type="audio/wav" />
+  </audio>
+
+  <!-- Printable Invoice Modal -->
+  <div class="modal-backdrop" id="invoice-modal" hidden>
+    <div class="invoice-card" id="invoice-printable">
+      <div class="invoice-header">
+        <div class="invoice-brand">
+          <h2>AI Water Controller</h2>
+          <p>স্মার্ট ওয়াটার পাম্প কন্ট্রোল সিস্টেম</p>
+          <p>হটলাইন: 01745242000</p>
+        </div>
+        <div class="invoice-meta">
+          <h3>ক্যাশ অন ডেলিভারি রশিদ</h3>
+          <p>অর্ডার নং: <strong id="inv-id"></strong></p>
+          <p>তারিখ: <span id="inv-date"></span></p>
+          <p>স্ট্যাটাস: <span id="inv-status"></span></p>
+        </div>
+      </div>
+
+      <hr class="invoice-divider" />
+
+      <div class="invoice-customer">
+        <h4>গ্রাহকের তথ্য</h4>
+        <p><strong>নাম:</strong> <span id="inv-name"></span></p>
+        <p><strong>মোবাইল:</strong> <span id="inv-phone"></span></p>
+        <p><strong>ঠিকানা:</strong> <span id="inv-address"></span></p>
+        <p id="inv-note-row" hidden><strong>নোট:</strong> <span id="inv-note"></span></p>
+      </div>
+
+      <table class="invoice-table">
+        <thead>
+          <tr>
+            <th>আইটেম বিবরণ</th>
+            <th>পরিমাণ</th>
+            <th>মূল্য</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>AI Water Controller (মূল ডিভাইস)</td>
+            <td>১ টি</td>
+            <td id="inv-ctrl-price">৳৪,৫০০</td>
+          </tr>
+          <tr>
+            <td>Premium Industrial Sensor</td>
+            <td>১ টি</td>
+            <td id="inv-sensor-price">৳১,৫৫০</td>
+          </tr>
+          <tr>
+            <td>Sensor Cable (<span id="inv-cable-feet"></span> ফুট × ৳৮)</td>
+            <td><span id="inv-cable-feet-2"></span> ফুট</td>
+            <td id="inv-cable-price">৳২৪০</td>
+          </tr>
+          <tr>
+            <td>Mobile App (Android)</td>
+            <td>১ টি</td>
+            <td>ফ্রি</td>
+          </tr>
+        </tbody>
+        <tfoot>
+          <tr class="invoice-total-row">
+            <th colspan="2">সর্বমোট প্রদেয় টাকা (ক্যাশ অন ডেলিভারি):</th>
+            <th id="inv-total-price">৳৬,২৯০</th>
+          </tr>
+        </tfoot>
+      </table>
+
+      <div class="invoice-footer">
+        <p>পণ্য গ্রহণের সময় চেক করে মূল্য পরিশোধ করুন। কোনো সমস্যা হলে আমাদের নম্বরে কল করুন।</p>
+      </div>
+
+      <div class="invoice-actions no-print">
+        <button type="button" class="btn-print" onclick="window.print()">🖨 প্রিন্ট / PDF সংরক্ষণ</button>
+        <button type="button" class="btn-close-modal" id="btn-close-invoice">বন্ধ করুন</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="site-config.js"></script>
+  <script src="admin.js"></script>
+</body>
+</html>

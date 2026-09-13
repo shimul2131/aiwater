@@ -24,6 +24,7 @@
   }
 
   document.querySelectorAll('a[href*="wa.me/8801745242000"]').forEach((el) => {
+    if (el.id === "calc-order-btn") return;
     el.setAttribute("href", whatsappURL);
   });
 

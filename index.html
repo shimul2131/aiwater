@@ -6,7 +6,7 @@
     <title>AI Water Controller | Smart Water Tank & Motor Control</title>
     <meta
       name="description"
-      content="পানির মোটর চালু-বন্ধের ঝামেলা শেষ করুন AI Water Controller দিয়ে। Controller ৳৪,৫০০, Normal Sensor ৳১৯৯, Premium Sensor ৳১,৫৫০, Cable ৳৮/ফুট।"
+      content="পানির মোটর চালু-বন্ধের ঝামেলা শেষ করুন AI Water Controller দিয়ে। Controller ৳৪,৫০০, Premium Sensor ৳১,৫৫০, Cable ৳৮/ফুট।"
     />
     <meta name="theme-color" content="#0891b2" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -41,7 +41,7 @@
         </button>
 
         <nav class="site-nav" id="site-nav" aria-label="প্রধান মেনু">
-          <a href="#app">মূল্য ও ডেমো</a>
+          <a href="#live-demo">মূল্য ও ডেমো</a>
           <a href="#overview">অরিজিনাল ছবি</a>
           <a href="#videos">প্রোডাক্ট ভিডিও</a>
           <a href="#features">ফিচার</a>
@@ -78,10 +78,21 @@
               </p>
 
               <div class="home-meta">
-                <span class="demo-pill">
+                <a class="demo-pill" href="#live-demo">
                   <span class="demo-pill-dot" aria-hidden="true"></span>
                   লাইভ অ্যাপ ডেমো
-                </span>
+                </a>
+                <a
+                  class="btn-play-store"
+                  id="play-store-btn-hero"
+                  href="#"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  hidden
+                >
+                  <span class="btn-play-store-icon" aria-hidden="true">▶</span>
+                  Google Play থেকে ডাউনলোড
+                </a>
               </div>
             </div>
 
@@ -99,7 +110,7 @@
             </figure>
 
             <!-- 3. App demo under picture -->
-            <div class="home-demo-wrap">
+            <div class="home-demo-wrap" id="live-demo">
               <p class="home-demo-hint home-demo-hint--above">
                 ফোনে <strong>ON/OFF</strong> চাপুন — ট্যাংকের পানি বাড়বে/কমবে। ☰ মেনু থেকে Auto ও Schedule সেটিং দেখুন।
               </p>
@@ -305,11 +316,24 @@
               </div>
             </div>
 
+            <div class="play-store-wrap" id="play-store-wrap" hidden>
+              <a
+                class="btn-play-store btn-play-store--large"
+                id="play-store-btn-demo"
+                href="#"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                <span class="btn-play-store-icon" aria-hidden="true">▶</span>
+                Google Play থেকে অ্যাপ ডাউনলোড করুন
+              </a>
+            </div>
+
             <!-- 4. Other under app demo: price calc → rest -->
             <div class="home-after">
               <div class="price-calc" id="price-calc" aria-labelledby="price-calc-title">
                 <h3 id="price-calc-title">প্যাকেজ মূল্য হিসাব</h3>
-                <p class="price-calc-lead">সেন্সর বেছে নিন ও কত ফুট Cable লাগবে লিখুন — মোট অটো হিসাব হবে</p>
+                <p class="price-calc-lead">কত ফুট Cable লাগবে লিখুন — মোট অটো হিসাব হবে</p>
 
                 <div class="price-calc-products">
                   <figure class="price-calc-product">
@@ -317,60 +341,32 @@
                       id="pkg-controller-img"
                       src="assets/product-controller.png"
                       alt="AI Water Controller"
-                      width="120"
-                      height="90"
+                      width="160"
+                      height="160"
                       loading="lazy"
                     />
                     <figcaption>Controller</figcaption>
                   </figure>
                   <span class="price-calc-plus">+</span>
-                  <figure class="price-calc-product" id="calc-sensor-preview-premium">
+                  <figure class="price-calc-product">
                     <img
                       id="pkg-sensor-img"
                       src="assets/sensor.png"
                       alt="Premium Industrial Sensor"
-                      width="96"
-                      height="96"
+                      width="160"
+                      height="160"
                       loading="lazy"
                     />
-                    <figcaption>Premium</figcaption>
-                  </figure>
-                  <figure class="price-calc-product" id="calc-sensor-preview-basic" hidden>
-                    <img
-                      id="pkg-sensor-basic-img"
-                      src="assets/sensor-basic.png"
-                      alt="Normal HC-SR04 Sensor"
-                      width="96"
-                      height="96"
-                      loading="lazy"
-                    />
-                    <figcaption>Normal</figcaption>
+                    <figcaption>Premium Sensor</figcaption>
                   </figure>
                 </div>
 
-                <div class="price-calc-options" role="radiogroup" aria-label="সেন্সর প্যাকেজ">
-                  <label class="price-calc-option">
-                    <input type="radio" name="calc-package" value="premium" checked />
-                    <span class="price-calc-option-body">
-                      <strong>১. Premium Sensor প্যাকেজ</strong>
-                      <small>
-                        Controller <span data-price="controller">৳৪,৫০০</span>
-                        + Premium Sensor <span data-price="sensor">৳১,৫৫০</span>
-                        + Cable <span data-price="cablePerFoot">৳৮</span>/ফুট
-                      </small>
-                    </span>
-                  </label>
-                  <label class="price-calc-option">
-                    <input type="radio" name="calc-package" value="basic" />
-                    <span class="price-calc-option-body">
-                      <strong>২. Normal Sensor প্যাকেজ</strong>
-                      <small>
-                        Controller <span data-price="controller">৳৪,৫০০</span>
-                        + Normal Sensor <span data-price="sensorBasic">৳১৯৯</span>
-                        + Cable <span data-price="cablePerFoot">৳৮</span>/ফুট
-                      </small>
-                    </span>
-                  </label>
+                <div class="price-calc-summary">
+                  <p>
+                    Controller <strong data-price="controller">৳৪,৫০০</strong>
+                    + Premium Sensor <strong data-price="sensor">৳১,৫৫০</strong>
+                    + Cable <strong data-price="cablePerFoot">৳৮</strong>/ফুট
+                  </p>
                 </div>
 
                 <label class="price-calc-feet">
@@ -395,7 +391,7 @@
                     <strong id="calc-line-controller">৳৪,৫০০</strong>
                   </li>
                   <li>
-                    <span id="calc-sensor-label">Premium Sensor</span>
+                    <span>Premium Sensor</span>
                     <strong id="calc-line-sensor">৳১,৫৫০</strong>
                   </li>
                   <li>
@@ -412,17 +408,135 @@
 
                 <div id="pkg-controller-video-wrap" class="video-embed video-embed--compact" hidden></div>
                 <a id="pkg-controller-video" class="video-link-btn" href="#" hidden>▶ Controller ভিডিও</a>
-                <div id="pkg-sensor-video-wrap" class="video-embed video-embed--compact" hidden></div>
-                <a id="pkg-sensor-video" class="video-link-btn" href="#" hidden>▶ Premium Sensor ভিডিও</a>
 
-                <a
-                  class="btn btn-whatsapp price-calc-order"
-                  id="calc-order-btn"
-                  href="https://wa.me/8801745242000"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  >এই প্যাকেজ অর্ডার করুন</a
-                >
+                <!-- Customer Order Form -->
+                <div class="order-form-box" id="order-form-container">
+                  <div class="order-form-header">
+                    <h4>সরাসরি ওয়েবসাইটে অর্ডার করুন</h4>
+                    <p>ক্যাশ অন ডেলিভারি — পণ্য হাতে পেয়ে টাকা পরিশোধ করুন</p>
+                  </div>
+
+                  <form id="customer-order-form">
+                    <div class="order-input-group">
+                      <label for="order-customer-name">আপনার পূর্ণ নাম <span style="color:#ef4444">*</span></label>
+                      <input
+                        type="text"
+                        id="order-customer-name"
+                        placeholder="উদাঃ মোঃ আরিফুল ইসলাম"
+                        required
+                        autocomplete="name"
+                      />
+                    </div>
+
+                    <div class="order-input-group">
+                      <label for="order-customer-phone">মোবাইল নম্বর <span style="color:#ef4444">*</span></label>
+                      <input
+                        type="tel"
+                        id="order-customer-phone"
+                        placeholder="উদাঃ 017xxxxxxxx"
+                        required
+                        autocomplete="tel"
+                      />
+                    </div>
+
+                    <div class="order-input-group">
+                      <label for="order-customer-address">সম্পূর্ণ ডেলিভারি ঠিকানা <span style="color:#ef4444">*</span></label>
+                      <textarea
+                        id="order-customer-address"
+                        rows="2"
+                        placeholder="বাড়ি/হোল্ডিং নং, রোড, থানা/উপজেলা, জেলা (উদাঃ বাড়ি ১২, রোড ৫, মিরপুর ১০, ঢাকা)"
+                        required
+                        autocomplete="street-address"
+                      ></textarea>
+                    </div>
+
+                    <div class="order-input-group">
+                      <label for="order-customer-note">বিশেষ নির্দেশনা (ঐচ্ছিক)</label>
+                      <input
+                        type="text"
+                        id="order-customer-note"
+                        placeholder="যেমন: ডেলিভারির আগে কল করবেন"
+                      />
+                    </div>
+
+                    <div class="order-total-preview">
+                      <span>সর্বমোট প্রদেয় টাকা:</span>
+                      <strong id="form-order-total">৳৬,২৯০</strong>
+                    </div>
+
+                    <button type="submit" class="btn-submit-order" id="btn-submit-order">
+                      <span>✓ অর্ডার কনফার্ম করুন (ক্যাশ অন ডেলিভারি)</span>
+                    </button>
+
+                    <div class="order-badges-guarantee">
+                      <span>✓ পণ্য হাতে পেয়ে মূল্য পরিশোধ করবেন</span>
+                      <span>✓ অর্ডার করার পর আমাদের প্রতিনিধি আপনাকে কল করে নিশ্চিত করবে</span>
+                    </div>
+                  </form>
+
+                  <!-- Success Message Card (Hidden by default) -->
+                  <div class="order-success-card" id="order-success-card" hidden>
+                    <div class="order-success-icon">✓</div>
+                    <h4>অর্ডার সফলভাবে গ্রহণ করা হয়েছে!</h4>
+                    <p>ধন্যবাদ, <strong id="success-name"></strong>! আপনার অর্ডারটি আমরা পেয়েছি।</p>
+
+                    <div class="success-info-table">
+                      <div>
+                        <span>অর্ডার নম্বর:</span>
+                        <strong id="success-id" style="font-family: var(--font-en); color: #0284c7;"></strong>
+                      </div>
+                      <div>
+                        <span>মোবাইল:</span>
+                        <strong id="success-phone"></strong>
+                      </div>
+                      <div>
+                        <span>ঠিকানা:</span>
+                        <span id="success-address"></span>
+                      </div>
+                      <div>
+                        <span>ক্যাবল:</span>
+                        <span id="success-cable"></span>
+                      </div>
+                      <div style="border-top: 1px dashed #cbd5e1; padding-top: 0.35rem; margin-top: 0.2rem;">
+                        <strong>মোট বিল:</strong>
+                        <strong id="success-total" style="color: #e11d48; font-family: var(--font-en); font-size: 1.05rem;"></strong>
+                      </div>
+                    </div>
+
+                    <p style="font-size: 0.82rem; color: #475569; margin-bottom: 0.85rem;">
+                      📞 আমাদের টিম শীঘ্রই আপনার নম্বরে কল করে ডেলিভারি কনফার্ম করবে।
+                    </p>
+
+                    <div class="success-actions">
+                      <a
+                        class="btn btn-whatsapp"
+                        id="success-whatsapp-btn"
+                        href="#"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        style="justify-content: center;"
+                      >
+                        💬 WhatsApp-এ অর্ডার ট্র্যাক করুন
+                      </a>
+                      <button type="button" class="btn-new-order" id="btn-new-order">
+                        আরেকটি নতুন অর্ডার করুন
+                      </button>
+                    </div>
+                  </div>
+
+                  <div class="order-divider-alt">
+                    <span>অথবা</span>
+                  </div>
+
+                  <a
+                    class="btn btn-whatsapp price-calc-order"
+                    id="calc-order-btn"
+                    href="https://wa.me/8801745242000"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    >💬 সরাসরি WhatsApp-এ অর্ডার করুন</a
+                  >
+                </div>
               </div>
 
               <div class="cta-row home-cta">
@@ -457,6 +571,7 @@
             <a href="#videos">প্রোডাক্ট ভিডিও</a>
             <a href="#features">ফিচার</a>
             <a href="#warranty">ওয়ারেন্টি</a>
+            <a href="#reviews">কাস্টমার রিভিউ</a>
             <a href="#faq">FAQ</a>
           </nav>
 
@@ -505,6 +620,16 @@
               <div class="flow-badge">৪</div>
               <h3>Mobile App</h3>
               <p>পানির লেভেল দেখুন এবং মোটর ON/OFF করুন।</p>
+              <a
+                class="btn-play-store btn-play-store--inline"
+                id="play-store-btn-flow"
+                href="#"
+                target="_blank"
+                rel="noopener noreferrer"
+                hidden
+              >
+                Google Play থেকে ডাউনলোড
+              </a>
             </li>
             <li class="flow-arrow" aria-hidden="true">↓</li>
             <li class="flow-step">
@@ -517,25 +642,43 @@
           <div id="videos" class="video-section video-section--dual">
             <div class="section-head section-head--videos">
               <h3 class="video-section-title">প্রোডাক্ট ভিডিও</h3>
-              <p>ইনস্টলেশন ও কীভাবে কাজ করে — দুটি ভিডিও</p>
+              <p>App Setup, Controller, Installation ও App Details — ৪টি ভিডিও</p>
             </div>
 
-            <div class="video-grid">
+            <div class="video-grid video-grid--four">
               <article class="video-card">
-                <h4>Total Installation &amp; Setup</h4>
-                <p class="video-card-desc">সম্পূর্ণ ইনস্টলেশন ও সেটআপ দেখুন</p>
-                <div id="install-video-wrap" class="video-embed" hidden></div>
-                <p id="install-video-placeholder" class="video-placeholder">
-                  Installation &amp; Setup ভিডিও শীঘ্রই যোগ করা হবে।
+                <h4>App Setup Video</h4>
+                <p class="video-card-desc">মোবাইল অ্যাপ সেটআপ দেখুন</p>
+                <div id="app-setup-video-wrap" class="video-embed" hidden></div>
+                <p id="app-setup-video-placeholder" class="video-placeholder">
+                  App Setup ভিডিও শীঘ্রই যোগ করা হবে।
                 </p>
               </article>
 
               <article class="video-card">
-                <h4>কীভাবে কাজ করে</h4>
-                <p class="video-card-desc">সেন্সর থেকে অ্যাপ পর্যন্ত পুরো প্রক্রিয়া</p>
-                <div id="how-video-wrap" class="video-embed" hidden></div>
-                <p id="how-video-placeholder" class="video-placeholder">
-                  কীভাবে কাজ করে — ভিডিও শীঘ্রই যোগ করা হবে।
+                <h4>Controller Video</h4>
+                <p class="video-card-desc">AI Water Controller বিস্তারিত দেখুন</p>
+                <div id="controller-video-wrap" class="video-embed" hidden></div>
+                <p id="controller-video-placeholder" class="video-placeholder">
+                  Controller ভিডিও শীঘ্রই যোগ করা হবে।
+                </p>
+              </article>
+
+              <article class="video-card">
+                <h4>Installation Video</h4>
+                <p class="video-card-desc">সম্পূর্ণ ইনস্টলেশন ও সেটআপ দেখুন</p>
+                <div id="install-video-wrap" class="video-embed" hidden></div>
+                <p id="install-video-placeholder" class="video-placeholder">
+                  Installation ভিডিও শীঘ্রই যোগ করা হবে।
+                </p>
+              </article>
+
+              <article class="video-card">
+                <h4>App Details</h4>
+                <p class="video-card-desc">অ্যাপের ফিচার ও ব্যবহার বিস্তারিত</p>
+                <div id="app-details-video-wrap" class="video-embed" hidden></div>
+                <p id="app-details-video-placeholder" class="video-placeholder">
+                  App Details ভিডিও শীঘ্রই যোগ করা হবে।
                 </p>
               </article>
             </div>
@@ -667,22 +810,25 @@
         </div>
       </section>
 
-      <!-- 10. REVIEWS PLACEHOLDER -->
+      <!-- 10. CUSTOMER REVIEWS SLIDESHOW -->
       <section class="section section-alt" id="reviews" aria-labelledby="reviews-title">
         <div class="container">
           <div class="section-head">
-            <h2 id="reviews-title">কাস্টমার রিভিউ</h2>
+            <h2 id="reviews-title">সম্মানিত কাস্টমারের মতামত</h2>
+            <p>গ্রাহকদের আসল কমেন্ট স্ক্রিনশট</p>
           </div>
-          <div class="review-grid">
-            <article class="review-card review-placeholder">
-              <p>আপনার Customer Review এখানে যোগ করুন</p>
-            </article>
-            <article class="review-card review-placeholder">
-              <p>আপনার Customer Review এখানে যোগ করুন</p>
-            </article>
-            <article class="review-card review-placeholder">
-              <p>আপনার Customer Review এখানে যোগ করুন</p>
-            </article>
+
+          <div class="reviews-slider" id="reviews-slider" hidden>
+            <button type="button" class="reviews-nav reviews-nav--prev" id="reviews-prev" aria-label="আগের রিভিউ">‹</button>
+            <div class="reviews-viewport">
+              <div class="reviews-track" id="reviews-track"></div>
+            </div>
+            <button type="button" class="reviews-nav reviews-nav--next" id="reviews-next" aria-label="পরের রিভিউ">›</button>
+            <div class="reviews-dots" id="reviews-dots" aria-label="স্লাইড নেভিগেশন"></div>
+          </div>
+
+          <div class="reviews-empty" id="reviews-empty">
+            <p>কাস্টমার কমেন্ট স্ক্রিনশট শীঘ্রই যোগ করা হবে।</p>
           </div>
         </div>
       </section>
@@ -740,11 +886,11 @@
             </details>
             <details class="faq-item">
               <summary>শুধু Controller কিনতে পারব?</summary>
-              <p>হ্যাঁ। Controller ৳৪,৫০০। Normal Sensor ৳১৯৯। Premium Sensor ৳১,৫৫০। Cable ৳৮/ফুট। হোমে প্যাকেজ হিসাব দিয়ে Cable ফুট লিখে মোট দেখতে পারবেন।</p>
+              <p>হ্যাঁ। Controller ৳৪,৫০০ + Premium Sensor ৳১,৫৫০ + Cable ৳৮/ফুট। হোমে প্যাকেজ হিসাব দিয়ে Cable ফুট লিখে মোট দেখতে পারবেন।</p>
             </details>
             <details class="faq-item">
               <summary>প্যাকেজে কী কী পাওয়া যায়?</summary>
-              <p>AI Water Controller + সেন্সর (Normal বা Premium) + ফ্রি Mobile App। Sensor Cable প্যাকেজে ফ্রি নেই — ৳৮/ফুট।</p>
+              <p>AI Water Controller + Premium Sensor + ফ্রি Mobile App। Sensor Cable প্যাকেজে ফ্রি নেই — ৳৮/ফুট।</p>
             </details>
             <details class="faq-item">
               <summary>ইনস্টলেশন কে করবে?</summary>
@@ -815,8 +961,10 @@
           <strong>AI Water Controller</strong>
           <p>Smart Water Tank & Motor Control</p>
         </div>
-        <p>
+        <p style="display: flex; gap: 1rem; align-items: center; flex-wrap: wrap;">
           <a href="tel:+8801745242000">01745242000</a>
+          <span>·</span>
+          <a href="admin.html" target="_blank" rel="noopener" style="opacity: 0.8; font-size: 0.88rem; color: var(--cyan);">🔒 অ্যাডমিন প্যানেল</a>
         </p>
       </div>
     </footer>

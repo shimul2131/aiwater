@@ -1,0 +1,19 @@
+[
+  {
+    "id": "ORD-183261",
+    "createdAt": "2026-09-12T15:11:27.354Z",
+    "formattedTime": "9/12/2026, 9:11:27 PM",
+    "name": "Md. Ariful Islam",
+    "phone": "01745242000",
+    "address": "House 12, Road 5, Mirpur 10, Dhaka",
+    "note": "Call before delivery",
+    "packageName": "AI Controller + Premium Sensor",
+    "cableFeet": 30,
+    "controllerPrice": 4500,
+    "sensorPrice": 1550,
+    "cablePrice": 240,
+    "totalPrice": 6290,
+    "status": "confirmed",
+    "confirmedAt": "2026-09-12T15:11:46.481Z"
+  }
+]

@@ -1,0 +1,14 @@
+[
+  {
+    "id": "REV-comment-1",
+    "src": "assets/reviews/comment-1.png",
+    "alt": "কাস্টমার রিভিউ — Shamim Ahmed",
+    "createdAt": "2026-09-13T14:50:00.000Z"
+  },
+  {
+    "id": "REV-comment-2",
+    "src": "assets/reviews/comment-2.png",
+    "alt": "কাস্টমার রিভিউ — Mahajabin Islam",
+    "createdAt": "2026-09-13T14:50:00.000Z"
+  }
+]
