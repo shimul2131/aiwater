@@ -1,6 +1,8 @@
 (() => {
   const cfg = window.SITE_CONFIG || {};
-  const ADMIN_PASSWORD = (cfg.admin && cfg.admin.password) ? String(cfg.admin.password).trim() : 'fres1234';
+  const ADMIN_PASSWORD = String(
+    (cfg.admin && cfg.admin.password) || "fres1234"
+  ).trim();
 
   // Elements
   const loginScreen = document.getElementById('login-screen');
@@ -138,13 +140,18 @@
   if (loginForm) {
     loginForm.addEventListener('submit', (e) => {
       e.preventDefault();
-      const entered = (adminPassInput.value || '').trim();
+      const entered = String(adminPassInput.value || '')
+        .trim()
+        .replace(/\u200b/g, ''); // strip zero-width chars from mobile copy/paste
       if (entered === ADMIN_PASSWORD) {
         sessionStorage.setItem('ai_controller_admin_auth', 'true');
         if (loginError) loginError.hidden = true;
         showDashboard();
       } else {
-        if (loginError) loginError.hidden = false;
+        if (loginError) {
+          loginError.hidden = false;
+          loginError.textContent = '❌ ভুল পাসওয়ার্ড! আবার চেষ্টা করুন।';
+        }
         adminPassInput.focus();
         adminPassInput.select();
       }
