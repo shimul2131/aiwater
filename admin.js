@@ -137,6 +137,7 @@
     fetchOrders(true);
     startPolling();
     if (typeof fetchAdminReviews === "function") fetchAdminReviews();
+    if (typeof fillVideoForm === "function") fillVideoForm();
   }
 
   if (loginForm && adminPassInput) {
@@ -191,33 +192,85 @@
     return new URL(rel, window.location.href).href;
   }
 
+  function readLocalOrders() {
+    try {
+      const local = localStorage.getItem('ai_controller_orders');
+      return local ? JSON.parse(local) : [];
+    } catch (e) {
+      return [];
+    }
+  }
+
+  function statusRank(status) {
+    if (status === 'delivered') return 3;
+    if (status === 'confirmed') return 2;
+    if (status === 'cancelled') return 0;
+    return 1; // pending
+  }
+
+  // Merge API + localStorage so confirm/cancel is not wiped by the next poll
+  // (static host: API missing; or local-only orders; or PATCH failed but UI updated)
+  function mergeOrders(serverOrders, localOrders) {
+    const map = new Map();
+
+    (serverOrders || []).forEach(o => {
+      if (o && o.id) map.set(o.id, o);
+    });
+
+    (localOrders || []).forEach(o => {
+      if (!o || !o.id) return;
+      const existing = map.get(o.id);
+      if (!existing) {
+        map.set(o.id, o);
+        return;
+      }
+      const localNewer =
+        statusRank(o.status) > statusRank(existing.status) ||
+        (o.status === existing.status &&
+          o.confirmedAt &&
+          (!existing.confirmedAt || String(o.confirmedAt) > String(existing.confirmedAt)));
+      if (localNewer) {
+        map.set(o.id, { ...existing, ...o });
+      }
+    });
+
+    return Array.from(map.values()).sort((a, b) => {
+      return String(b.createdAt || '').localeCompare(String(a.createdAt || ''));
+    });
+  }
+
+  function setActiveFilter(filter) {
+    currentFilter = filter || 'all';
+    if (filterTabs) {
+      filterTabs.querySelectorAll('.filter-tab').forEach(b => {
+        b.classList.toggle('is-active', b.getAttribute('data-filter') === currentFilter);
+      });
+    }
+  }
+
   async function fetchOrders(isFirstLoad = false) {
-    let fetched = null;
+    let serverOrders = null;
+    const localOrders = readLocalOrders();
 
     try {
       const res = await fetch(getApiUrl(), { cache: 'no-store' });
       if (res.ok) {
         const json = await res.json();
         if (json.success && Array.isArray(json.orders)) {
-          fetched = json.orders;
-          // Sync to localStorage as backup
-          try {
-            localStorage.setItem('ai_controller_orders', JSON.stringify(fetched));
-          } catch (e) {}
+          serverOrders = json.orders;
         }
       }
     } catch (err) {
-      // Server not reachable (static file server mode) -> Fallback to localStorage
+      // Server not reachable (static file server mode)
     }
 
-    if (!fetched) {
-      try {
-        const local = localStorage.getItem('ai_controller_orders');
-        fetched = local ? JSON.parse(local) : [];
-      } catch (e) {
-        fetched = [];
-      }
-    }
+    const fetched = serverOrders
+      ? mergeOrders(serverOrders, localOrders)
+      : localOrders;
+
+    try {
+      localStorage.setItem('ai_controller_orders', JSON.stringify(fetched));
+    } catch (e) {}
 
     // Check for newly arrived orders
     if (!isFirstLoad && fetched.length > 0) {
@@ -248,8 +301,6 @@
 
   // Save Orders (handles both API and LocalStorage)
   async function updateOrderStatus(orderId, nextStatus) {
-    let updated = false;
-
     try {
       const res = await fetch(getApiUrl(encodeURIComponent(orderId)), {
         method: 'PATCH',
@@ -257,12 +308,11 @@
         body: JSON.stringify({ status: nextStatus })
       });
       if (res.ok) {
-        const json = await res.json();
-        if (json.success) updated = true;
+        await res.json().catch(() => ({}));
       }
     } catch (e) {}
 
-    // Update in local memory and storage
+    // Update in local memory and storage (always — works even without API)
     orders = orders.map(o => {
       if (o.id === orderId) {
         return {
@@ -278,10 +328,17 @@
       localStorage.setItem('ai_controller_orders', JSON.stringify(orders));
     } catch (e) {}
 
+    // Confirm/deliver/cancel করে Pending ট্যাবে থাকলে অর্ডার উধাও মনে হয় —
+    // তাই সেই স্ট্যাটাসের ট্যাবে নিয়ে দেখাই
+    if (nextStatus === 'confirmed' || nextStatus === 'delivered' || nextStatus === 'cancelled') {
+      setActiveFilter(nextStatus);
+    }
+
     renderAll();
 
     if (nextStatus === 'confirmed') {
-      showToast(`অর্ডার #${orderId} সফলভাবে কনফার্ম করা হয়েছে!`, 'success');
+      showToast(`অর্ডার #${orderId} কনফার্ম হয়েছে — হ্যান্ডেল প্যানেল খুলছে...`, 'success');
+      setTimeout(() => openHandlePanel(orderId), 250);
     } else if (nextStatus === 'delivered') {
       showToast(`অর্ডার #${orderId} ডেলিভারি সম্পন্ন চিহ্নিত হয়েছে।`, 'success');
     } else if (nextStatus === 'cancelled') {
@@ -374,8 +431,14 @@
         ordersEmpty.hidden = false;
         if (searchQuery) {
           emptyMessage.textContent = `"${searchQuery}" এর সাথে মিলে এমন কোনো অর্ডার পাওয়া যায়নি।`;
-        } else if (currentFilter !== 'all') {
-          emptyMessage.textContent = `এই ফিল্টারে (${currentFilter}) কোনো অর্ডার নেই।`;
+        } else if (currentFilter === 'pending') {
+          emptyMessage.textContent = 'কোনো পেন্ডিং অর্ডার নেই।';
+        } else if (currentFilter === 'confirmed') {
+          emptyMessage.textContent = 'কোনো কনফার্মড অর্ডার নেই।';
+        } else if (currentFilter === 'delivered') {
+          emptyMessage.textContent = 'কোনো ডেলিভার্ড অর্ডার নেই।';
+        } else if (currentFilter === 'cancelled') {
+          emptyMessage.textContent = 'কোনো বাতিল অর্ডার নেই।';
         } else {
           emptyMessage.textContent = 'এখনও কোনো গ্রাহক অর্ডার করেননি। গ্রাহক অর্ডার করলেই এখানে চলে আসবে।';
         }
@@ -408,19 +471,10 @@
       badgeClass = 'badge-cancelled';
     }
 
-    // Clean phone for whatsapp
-    let cleanPhone = (order.phone || '').replace(/[^0-9]/g, '');
-    if (cleanPhone.startsWith('0')) cleanPhone = '88' + cleanPhone;
-
-    const waConfirmMsg = encodeURIComponent(
-      `আসসালামু আলাইকুম ${order.name || ''} সাহেব,\n` +
-      `AI Water Controller-এ আপনার অর্ডার (#${order.id}) কনফার্ম করা হয়েছে।\n` +
-      `প্যাকেজ: Controller + Premium Sensor\n` +
-      `ক্যাবল: ${cableFeet} ফুট\n` +
-      `মোট মূল্য: ${formatBdt(totalPrice)} (ক্যাশ অন ডেলিভারি)\n` +
-      `ঠিকানা: ${order.address || ''}\n` +
-      `আমরা শীঘ্রই পণ্যটি পাঠিয়ে দিচ্ছি। ধন্যবাদ!`
-    );
+    const cleanPhone = getCleanPhone(order.phone);
+    const waConfirmMsg = encodeURIComponent(buildWaConfirmText(order));
+    const telHref = 'tel:' + escapeHtml(order.phone || '');
+    const waHref = 'https://wa.me/' + cleanPhone + '?text=' + waConfirmMsg;
 
     return `
       <article class="order-card status-${status}" data-id="${order.id}">
@@ -433,7 +487,6 @@
         </div>
 
         <div class="order-card-body">
-          <!-- Customer Info -->
           <div class="customer-info-box">
             <div class="info-box-title">👤 গ্রাহকের তথ্য</div>
             <div class="info-row">
@@ -443,8 +496,8 @@
               <strong>মোবাইল:</strong>
               <div class="customer-phone-wrap">
                 <span class="customer-phone-number">${escapeHtml(order.phone || '')}</span>
-                <a href="tel:${escapeHtml(order.phone || '')}" class="btn-phone-call" title="কল করুন">📞 কল</a>
-                <a href="https://wa.me/${cleanPhone}?text=${waConfirmMsg}" target="_blank" rel="noopener noreferrer" class="btn-phone-wa" title="WhatsApp-এ মেসেজ">💬 WhatsApp</a>
+                <a href="${telHref}" class="btn-phone-call" title="কল করুন">📞 কল</a>
+                <a href="${waHref}" target="_blank" rel="noopener noreferrer" class="btn-phone-wa" title="WhatsApp-এ মেসেজ">💬 WhatsApp</a>
               </div>
             </div>
             <div class="info-row">
@@ -457,7 +510,6 @@
             ` : ''}
           </div>
 
-          <!-- Package Details -->
           <div class="package-info-box">
             <div class="info-box-title">📦 পণ্যের বিবরণ</div>
             <div class="info-row">
@@ -480,6 +532,19 @@
             ` : ''}
           </div>
         </div>
+
+        ${status === 'confirmed' ? `
+          <div class="confirmed-handle-bar">
+            <p class="confirmed-handle-title">কনফার্মড — এখন হ্যান্ডেল করুন</p>
+            <div class="confirmed-handle-actions">
+              <a class="btn-handle-mini btn-handle-call" href="${telHref}">📞 কল</a>
+              <a class="btn-handle-mini btn-handle-wa" href="${waHref}" target="_blank" rel="noopener noreferrer">💬 WhatsApp</a>
+              <button type="button" class="btn-handle-mini btn-handle-copy" onclick="window.adminActions.copyAddress('${order.id}')">📋 ঠিকানা</button>
+              <button type="button" class="btn-handle-mini btn-handle-print" onclick="window.adminActions.openInvoice('${order.id}')">🖨 রশিদ</button>
+              <button type="button" class="btn-handle-mini btn-handle-open" onclick="window.adminActions.openHandle('${order.id}')">⚡ ফুল হ্যান্ডেল</button>
+            </div>
+          </div>
+        ` : ''}
 
         <div class="order-card-footer">
           <div class="actions-primary">
@@ -530,6 +595,146 @@
         </div>
       </article>
     `;
+  }
+
+  function getCleanPhone(phone) {
+    let cleanPhone = String(phone || '').replace(/[^0-9]/g, '');
+    if (cleanPhone.startsWith('0')) cleanPhone = '88' + cleanPhone;
+    return cleanPhone;
+  }
+
+  function buildWaConfirmText(order) {
+    const cableFeet = Number(order.cableFeet) || 0;
+    const totalPrice = Number(order.totalPrice) || 0;
+    return (
+      `আসসালামু আলাইকুম ${order.name || ''} সাহেব,\n` +
+      `AI Water Controller-এ আপনার অর্ডার (#${order.id}) কনফার্ম করা হয়েছে।\n` +
+      `প্যাকেজ: Controller + Premium Sensor\n` +
+      `ক্যাবল: ${cableFeet} ফুট\n` +
+      `মোট মূল্য: ${formatBdt(totalPrice)} (ক্যাশ অন ডেলিভারি)\n` +
+      `ঠিকানা: ${order.address || ''}\n` +
+      `আমরা শীঘ্রই পণ্যটি পাঠিয়ে দিচ্ছি। ধন্যবাদ!`
+    );
+  }
+
+  function buildOrderSummaryText(order) {
+    const cableFeet = Number(order.cableFeet) || 0;
+    const totalPrice = Number(order.totalPrice) || 0;
+    return (
+      `অর্ডার #${order.id}\n` +
+      `নাম: ${order.name || ''}\n` +
+      `মোবাইল: ${order.phone || ''}\n` +
+      `ঠিকানা: ${order.address || ''}\n` +
+      `প্যাকেজ: AI Controller + Premium Sensor\n` +
+      `ক্যাবল: ${cableFeet} ফুট\n` +
+      `মোট: ${formatBdt(totalPrice)} (COD)\n` +
+      (order.note ? `নোট: ${order.note}\n` : '')
+    );
+  }
+
+  async function copyText(text, okMsg) {
+    try {
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        await navigator.clipboard.writeText(text);
+      } else {
+        const ta = document.createElement('textarea');
+        ta.value = text;
+        document.body.appendChild(ta);
+        ta.select();
+        document.execCommand('copy');
+        ta.remove();
+      }
+      showToast(okMsg || 'কপি হয়েছে!', 'success');
+    } catch (e) {
+      showToast('কপি করা যায়নি। ম্যানুয়ালি সিলেক্ট করুন।', 'error');
+    }
+  }
+
+  // ====================================================
+  // HANDLE PANEL (after confirm)
+  // ====================================================
+  const handleModal = document.getElementById('handle-modal');
+  const btnCloseHandle = document.getElementById('btn-close-handle');
+  let handleOrderId = null;
+
+  function closeHandlePanel() {
+    if (handleModal) handleModal.hidden = true;
+    handleOrderId = null;
+  }
+
+  function openHandlePanel(orderId) {
+    const order = orders.find(o => o.id === orderId);
+    if (!order || !handleModal) return;
+
+    handleOrderId = orderId;
+    const cableFeet = Number(order.cableFeet) || 0;
+    const totalPrice = Number(order.totalPrice) || (4500 + 1550 + cableFeet * 8);
+    const cleanPhone = getCleanPhone(order.phone);
+    const waHref = 'https://wa.me/' + cleanPhone + '?text=' + encodeURIComponent(buildWaConfirmText(order));
+    const telHref = 'tel:' + (order.phone || '');
+
+    const meta = document.getElementById('handle-order-meta');
+    const nameEl = document.getElementById('handle-name');
+    const phoneEl = document.getElementById('handle-phone');
+    const addressEl = document.getElementById('handle-address');
+    const totalEl = document.getElementById('handle-total');
+    const btnCall = document.getElementById('handle-btn-call');
+    const btnWa = document.getElementById('handle-btn-wa');
+
+    if (meta) meta.textContent = `#${order.id} · ${formatDateTime(order.createdAt)}`;
+    if (nameEl) nameEl.textContent = order.name || '—';
+    if (phoneEl) phoneEl.textContent = order.phone || '—';
+    if (addressEl) addressEl.textContent = order.address || '—';
+    if (totalEl) totalEl.textContent = formatBdt(totalPrice);
+    if (btnCall) btnCall.href = telHref;
+    if (btnWa) btnWa.href = waHref;
+
+    handleModal.hidden = false;
+  }
+
+  if (btnCloseHandle) {
+    btnCloseHandle.addEventListener('click', closeHandlePanel);
+  }
+  if (handleModal) {
+    handleModal.addEventListener('click', (e) => {
+      if (e.target === handleModal) closeHandlePanel();
+    });
+  }
+
+  const handleBtnCopyAddress = document.getElementById('handle-btn-copy-address');
+  const handleBtnCopyFull = document.getElementById('handle-btn-copy-full');
+  const handleBtnInvoice = document.getElementById('handle-btn-invoice');
+  const handleBtnDeliver = document.getElementById('handle-btn-deliver');
+
+  if (handleBtnCopyAddress) {
+    handleBtnCopyAddress.addEventListener('click', () => {
+      const order = orders.find(o => o.id === handleOrderId);
+      if (!order) return;
+      copyText(order.address || '', 'ঠিকানা কপি হয়েছে!');
+    });
+  }
+  if (handleBtnCopyFull) {
+    handleBtnCopyFull.addEventListener('click', () => {
+      const order = orders.find(o => o.id === handleOrderId);
+      if (!order) return;
+      copyText(buildOrderSummaryText(order), 'পুরো অর্ডার কপি হয়েছে!');
+    });
+  }
+  if (handleBtnInvoice) {
+    handleBtnInvoice.addEventListener('click', () => {
+      if (!handleOrderId) return;
+      const id = handleOrderId;
+      closeHandlePanel();
+      openInvoice(id);
+    });
+  }
+  if (handleBtnDeliver) {
+    handleBtnDeliver.addEventListener('click', () => {
+      if (!handleOrderId) return;
+      const id = handleOrderId;
+      closeHandlePanel();
+      updateOrderStatus(id, 'delivered');
+    });
   }
 
   function escapeHtml(str) {
@@ -610,6 +815,14 @@
     },
     openInvoice(id) {
       openInvoice(id);
+    },
+    openHandle(id) {
+      openHandlePanel(id);
+    },
+    copyAddress(id) {
+      const order = orders.find(o => o.id === id);
+      if (!order) return;
+      copyText(order.address || '', 'ঠিকানা কপি হয়েছে!');
     }
   };
 
@@ -620,9 +833,7 @@
     filterTabs.addEventListener('click', (e) => {
       const btn = e.target.closest('.filter-tab');
       if (!btn) return;
-      filterTabs.querySelectorAll('.filter-tab').forEach(b => b.classList.remove('is-active'));
-      btn.classList.add('is-active');
-      currentFilter = btn.getAttribute('data-filter') || 'all';
+      setActiveFilter(btn.getAttribute('data-filter') || 'all');
       renderOrders();
     });
   }
@@ -809,6 +1020,108 @@
       } catch (err) {
         showToast('মুছতে ব্যর্থ — সার্ভার চালু আছে কি?', 'error');
       }
+    });
+  }
+
+  // ====================================================
+  // VIDEO LINKS MANAGER
+  // ====================================================
+  const videosForm = document.getElementById('videos-admin-form');
+  const videoInputs = {
+    appSetup: document.getElementById('video-appSetup'),
+    controller: document.getElementById('video-controller'),
+    installation: document.getElementById('video-installation'),
+    appDetails: document.getElementById('video-appDetails')
+  };
+
+  function fillVideoForm() {
+    const cfg = window.SITE_CONFIG || {};
+    let videos = (cfg.videos || {});
+    try {
+      const saved = localStorage.getItem('ai_controller_videos');
+      if (saved) videos = { ...videos, ...JSON.parse(saved) };
+    } catch (e) {}
+
+    Object.keys(videoInputs).forEach((key) => {
+      if (videoInputs[key]) videoInputs[key].value = videos[key] || '';
+    });
+  }
+
+  function buildSiteConfigJs(videos) {
+    const cfg = window.SITE_CONFIG || {};
+    const links = cfg.links || {};
+    const images = cfg.images || {};
+    const prices = cfg.prices || {};
+    const reviews = cfg.reviews || [];
+
+    const q = (v) => JSON.stringify(v == null ? '' : String(v));
+    const reviewsBlock = reviews.length
+      ? reviews.map((r) => '    ' + JSON.stringify(typeof r === 'string' ? r : r.src)).join(',\n')
+      : '';
+
+    return (
+      '/**\n' +
+      ' * Admin — YouTube, ছবি, মূল্য, Play Store ও রিভিউ\n' +
+      ' */\n' +
+      'window.SITE_CONFIG = {\n' +
+      '  links: {\n' +
+      '    playStore: ' + q(links.playStore || '') + ',\n' +
+      '  },\n' +
+      '  videos: {\n' +
+      '    appSetup: ' + q(videos.appSetup) + ', // App Setup Video\n' +
+      '    controller: ' + q(videos.controller) + ', // Controller Video\n' +
+      '    installation: ' + q(videos.installation) + ', // Installation Video\n' +
+      '    appDetails: ' + q(videos.appDetails) + ', // App Details Video\n' +
+      '  },\n' +
+      '  reviews: [\n' +
+      (reviewsBlock ? reviewsBlock + '\n' : '') +
+      '  ],\n' +
+      '  images: {\n' +
+      '    controller: ' + q(images.controller || 'assets/product-controller.png') + ',\n' +
+      '    sensor: ' + q(images.sensor || 'assets/sensor.png') + ',\n' +
+      '    controllerFallback: ' + q(images.controllerFallback || 'assets/product-controller.svg') + ',\n' +
+      '    sensorFallback: ' + q(images.sensorFallback || 'assets/sensor.svg') + ',\n' +
+      '    poster: ' + q(images.poster || 'assets/promo-poster.png') + ',\n' +
+      '  },\n' +
+      '  prices: {\n' +
+      '    controller: ' + Number(prices.controller || 4500) + ',\n' +
+      '    sensor: ' + Number(prices.sensor || 1550) + ',\n' +
+      '    cablePerFoot: ' + Number(prices.cablePerFoot || 8) + ',\n' +
+      '  },\n' +
+      '};\n'
+    );
+  }
+
+  function downloadTextFile(filename, text) {
+    const blob = new Blob([text], { type: 'application/javascript;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(url);
+  }
+
+  if (videosForm) {
+    videosForm.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const videos = {
+        appSetup: (videoInputs.appSetup && videoInputs.appSetup.value || '').trim(),
+        controller: (videoInputs.controller && videoInputs.controller.value || '').trim(),
+        installation: (videoInputs.installation && videoInputs.installation.value || '').trim(),
+        appDetails: (videoInputs.appDetails && videoInputs.appDetails.value || '').trim()
+      };
+
+      try {
+        localStorage.setItem('ai_controller_videos', JSON.stringify(videos));
+        if (!window.SITE_CONFIG) window.SITE_CONFIG = {};
+        window.SITE_CONFIG.videos = videos;
+      } catch (err) {}
+
+      downloadTextFile('site-config.js', buildSiteConfigJs(videos));
+      showToast('ভিডিও সেভ হয়েছে! ডাউনলোড করা site-config.js GitHub-এ আপলোড করুন।', 'success');
     });
   }
 

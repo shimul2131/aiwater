@@ -64,7 +64,11 @@
   }
 
   const images = cfg.images || {};
-  const videos = cfg.videos || {};
+  const videos = Object.assign({}, cfg.videos || {});
+  try {
+    const savedVideos = localStorage.getItem("ai_controller_videos");
+    if (savedVideos) Object.assign(videos, JSON.parse(savedVideos));
+  } catch (e) {}
   const prices = cfg.prices || {};
 
   function formatBdt(amount) {
@@ -80,6 +84,16 @@
 
     const homeCtrl = document.querySelector(".home-meta .price-chip strong");
     if (homeCtrl && prices.controller != null) homeCtrl.textContent = formatBdt(prices.controller);
+
+    // Mobile bottom bar — package start price (controller + sensor), not old 4990
+    const stickyOrder = document.getElementById("sticky-order-btn");
+    if (stickyOrder) {
+      const base =
+        (Number(prices.controller) || 0) + (Number(prices.sensor) || 0);
+      if (base > 0) {
+        stickyOrder.textContent = "অর্ডার · " + formatBdt(base);
+      }
+    }
   }
 
   let currentCalcState = {

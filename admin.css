@@ -1147,3 +1147,221 @@ button {
   color: var(--text-muted);
   padding: 1rem;
 }
+
+.videos-admin-form {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.videos-admin-form label {
+  display: grid;
+  gap: 0.35rem;
+  text-align: left;
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+
+.videos-admin-form input {
+  padding: 0.7rem 0.85rem;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  font-family: var(--font-en);
+  font-size: 0.92rem;
+  font-weight: 400;
+}
+
+.videos-admin-form input:focus {
+  outline: none;
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(2, 132, 199, 0.15);
+}
+
+/* Confirmed order handle bar */
+.confirmed-handle-bar {
+  margin: 0 1rem 0.85rem;
+  padding: 0.85rem 1rem;
+  border-radius: 12px;
+  background: linear-gradient(135deg, #ecfdf5, #eff6ff);
+  border: 1px solid rgba(16, 185, 129, 0.28);
+}
+
+.confirmed-handle-title {
+  margin: 0 0 0.65rem;
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: #065f46;
+}
+
+.confirmed-handle-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+}
+
+.btn-handle-mini {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.45rem 0.7rem;
+  border-radius: 8px;
+  font-size: 0.8rem;
+  font-weight: 700;
+  text-decoration: none;
+  border: none;
+  cursor: pointer;
+  font-family: inherit;
+}
+
+.btn-handle-call { background: #dbeafe; color: #1d4ed8; }
+.btn-handle-wa { background: #dcfce7; color: #15803d; }
+.btn-handle-copy { background: #f1f5f9; color: #334155; }
+.btn-handle-print { background: #e2e8f0; color: #0f172a; }
+.btn-handle-open { background: #0ea5e9; color: #fff; }
+.btn-handle-deliver { background: #2563eb; color: #fff; }
+
+/* Handle modal panel */
+.handle-panel {
+  width: min(560px, 94vw);
+  max-height: 92vh;
+  overflow: auto;
+  background: #fff;
+  border-radius: 18px;
+  padding: 1.25rem 1.25rem 1.5rem;
+  box-shadow: 0 24px 60px rgba(15, 23, 42, 0.28);
+}
+
+.handle-panel-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+}
+
+.handle-eyebrow {
+  margin: 0;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  color: #059669;
+  text-transform: uppercase;
+}
+
+.handle-panel-head h2 {
+  margin: 0.15rem 0 0.2rem;
+  font-size: 1.35rem;
+  color: #0f172a;
+}
+
+.handle-sub {
+  margin: 0;
+  font-size: 0.88rem;
+  color: #64748b;
+}
+
+.handle-customer-card {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 0.85rem 1rem;
+  margin-bottom: 1rem;
+}
+
+.handle-customer-row {
+  display: grid;
+  grid-template-columns: 72px 1fr;
+  gap: 0.5rem;
+  padding: 0.35rem 0;
+  font-size: 0.9rem;
+}
+
+.handle-customer-row span {
+  color: #64748b;
+}
+
+.handle-customer-row strong {
+  color: #0f172a;
+  word-break: break-word;
+}
+
+.handle-total {
+  color: #059669 !important;
+  font-size: 1.05rem;
+}
+
+.handle-steps {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.handle-steps li {
+  display: flex;
+  gap: 0.75rem;
+  padding: 0.85rem;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  background: #fff;
+}
+
+.handle-step-num {
+  flex-shrink: 0;
+  width: 1.75rem;
+  height: 1.75rem;
+  border-radius: 999px;
+  background: #0ea5e9;
+  color: #fff;
+  font-weight: 800;
+  font-size: 0.85rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.handle-step-body {
+  flex: 1;
+  min-width: 0;
+}
+
+.handle-step-body strong {
+  display: block;
+  font-size: 0.95rem;
+  color: #0f172a;
+}
+
+.handle-step-body p {
+  margin: 0.15rem 0 0.55rem;
+  font-size: 0.82rem;
+  color: #64748b;
+}
+
+.btn-handle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.35rem;
+  padding: 0.55rem 0.9rem;
+  border-radius: 10px;
+  font-size: 0.88rem;
+  font-weight: 700;
+  text-decoration: none;
+  border: none;
+  cursor: pointer;
+  font-family: inherit;
+}
+
+.handle-copy-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+}
+
+@media (max-width: 560px) {
+  .handle-customer-row {
+    grid-template-columns: 1fr;
+    gap: 0.1rem;
+  }
+}

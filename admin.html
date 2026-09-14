@@ -178,6 +178,42 @@
         </div>
       </section>
 
+      <!-- Video Links Manager -->
+      <section class="reviews-admin-section" id="videos-admin">
+        <div class="reviews-admin-head">
+          <div>
+            <h2>🎬 প্রোডাক্ট ভিডিও লিংক</h2>
+            <p>YouTube লিংক দিন → সেভ করুন → ডাউনলোড হওয়া <code>site-config.js</code> GitHub-এ আপলোড করুন</p>
+          </div>
+        </div>
+
+        <form class="videos-admin-form" id="videos-admin-form">
+          <label>
+            <span>App Setup Video</span>
+            <input type="url" id="video-appSetup" placeholder="https://youtu.be/xxxxxx" />
+          </label>
+          <label>
+            <span>Controller Video</span>
+            <input type="url" id="video-controller" placeholder="https://youtu.be/xxxxxx" />
+          </label>
+          <label>
+            <span>Installation Video</span>
+            <input type="url" id="video-installation" placeholder="https://youtu.be/xxxxxx" />
+          </label>
+          <label>
+            <span>App Details Video</span>
+            <input type="url" id="video-appDetails" placeholder="https://youtu.be/xxxxxx" />
+          </label>
+
+          <button type="submit" class="btn-upload-review" id="btn-save-videos">
+            ✓ ভিডিও লিংক সেভ ও site-config.js ডাউনলোড
+          </button>
+          <p class="reviews-upload-hint">
+            সেভ করলে নতুন <strong>site-config.js</strong> ডাউনলোড হবে। সেই ফাইল GitHub-এ আপলোড করলেই সাইটে ভিডিও দেখাবে।
+          </p>
+        </form>
+      </section>
+
       <!-- Customer Reviews Manager -->
       <section class="reviews-admin-section" id="reviews-admin">
         <div class="reviews-admin-head">
@@ -297,7 +333,86 @@
     </div>
   </div>
 
-  <script src="site-config.js?v=5"></script>
-  <script src="admin.js?v=5"></script>
+  <!-- Confirmed Order Handle Panel -->
+  <div class="modal-backdrop" id="handle-modal" hidden>
+    <div class="handle-panel" role="dialog" aria-labelledby="handle-title">
+      <div class="handle-panel-head">
+        <div>
+          <p class="handle-eyebrow">অর্ডার কনফার্মড</p>
+          <h2 id="handle-title">এখন হ্যান্ডেল করুন</h2>
+          <p class="handle-sub" id="handle-order-meta">#—</p>
+        </div>
+        <button type="button" class="btn-close-modal" id="btn-close-handle" aria-label="বন্ধ">✕</button>
+      </div>
+
+      <div class="handle-customer-card">
+        <div class="handle-customer-row">
+          <span>নাম</span>
+          <strong id="handle-name">—</strong>
+        </div>
+        <div class="handle-customer-row">
+          <span>মোবাইল</span>
+          <strong id="handle-phone">—</strong>
+        </div>
+        <div class="handle-customer-row">
+          <span>ঠিকানা</span>
+          <strong id="handle-address">—</strong>
+        </div>
+        <div class="handle-customer-row">
+          <span>মোট বিল</span>
+          <strong class="handle-total" id="handle-total">—</strong>
+        </div>
+      </div>
+
+      <ol class="handle-steps">
+        <li>
+          <span class="handle-step-num">১</span>
+          <div class="handle-step-body">
+            <strong>গ্রাহককে কল করুন</strong>
+            <p>অর্ডার ও ঠিকানা নিশ্চিত করুন</p>
+            <a class="btn-handle btn-handle-call" id="handle-btn-call" href="#">📞 এখনই কল করুন</a>
+          </div>
+        </li>
+        <li>
+          <span class="handle-step-num">২</span>
+          <div class="handle-step-body">
+            <strong>WhatsApp কনফার্মেশন পাঠান</strong>
+            <p>রেডি মেসেজ অটো খুলবে</p>
+            <a class="btn-handle btn-handle-wa" id="handle-btn-wa" href="#" target="_blank" rel="noopener noreferrer">💬 WhatsApp পাঠান</a>
+          </div>
+        </li>
+        <li>
+          <span class="handle-step-num">৩</span>
+          <div class="handle-step-body">
+            <strong>ঠিকানা / অর্ডার কপি করুন</strong>
+            <p>কুরিয়ার বা নোটের জন্য</p>
+            <div class="handle-copy-row">
+              <button type="button" class="btn-handle btn-handle-copy" id="handle-btn-copy-address">📋 ঠিকানা কপি</button>
+              <button type="button" class="btn-handle btn-handle-copy" id="handle-btn-copy-full">📄 পুরো অর্ডার কপি</button>
+            </div>
+          </div>
+        </li>
+        <li>
+          <span class="handle-step-num">৪</span>
+          <div class="handle-step-body">
+            <strong>রশিদ প্রিন্ট করুন</strong>
+            <p>ডেলিভারির সাথে দিন</p>
+            <button type="button" class="btn-handle btn-handle-print" id="handle-btn-invoice">🖨 রশিদ খুলুন</button>
+          </div>
+        </li>
+        <li>
+          <span class="handle-step-num">৫</span>
+          <div class="handle-step-body">
+            <strong>ডেলিভারি শেষ হলে</strong>
+            <p>স্ট্যাটাস আপডেট করুন</p>
+            <button type="button" class="btn-handle btn-handle-deliver" id="handle-btn-deliver">🚚 ডেলিভারি সম্পন্ন</button>
+          </div>
+        </li>
+      </ol>
+    </div>
+  </div>
+
+  <script src="site-config.js?v=6"></script>
+  <script src="admin.js?v=8"></script>
 </body>
 </html>
