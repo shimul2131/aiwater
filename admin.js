@@ -198,9 +198,12 @@
   function updateOrdersApiBanner() {
     const banner = document.getElementById('orders-api-banner');
     const syncBox = document.getElementById('order-sync-box');
+    const pcAlert = document.getElementById('pc-sync-alert');
     const hasCloud = window.OrdersAPI && window.OrdersAPI.hasCloudOrdersApi();
     if (banner) banner.hidden = !!hasCloud;
     if (syncBox) syncBox.hidden = !!hasCloud;
+    // Show PC sync alert when cloud not set (main reason PC shows 0)
+    if (pcAlert) pcAlert.hidden = !!hasCloud;
   }
 
   function readLocalOrders() {

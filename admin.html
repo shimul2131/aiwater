@@ -11,9 +11,9 @@
     href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;500;600;700&family=Sora:wght@500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap"
     rel="stylesheet"
   />
-  <link rel="stylesheet" href="admin.css?v=16" />
-  <link rel="stylesheet" href="pro-ui.css?v=16" />
-  <link rel="stylesheet" href="admin-cms.css?v=16" />
+  <link rel="stylesheet" href="admin.css?v=18" />
+  <link rel="stylesheet" href="pro-ui.css?v=18" />
+  <link rel="stylesheet" href="admin-cms.css?v=18" />
 </head>
 <body>
   <!-- Login Screen -->
@@ -151,6 +151,25 @@
               </div>
             </section>
 
+            <section class="pc-sync-alert" id="pc-sync-alert" hidden>
+              <div class="pc-sync-alert-inner">
+                <strong>ফোনে অর্ডার আছে, পিসিতে দেখাচ্ছে না?</strong>
+                <p>
+                  এটা বাগ না। অর্ডার এখন <b>শুধু সেই ফোন/ব্রাউজারে</b> সেভ হয়।
+                  পিসি আলাদা ডিভাইস বলে এখানে <b>০</b> দেখায়।
+                </p>
+                <ol class="pc-sync-steps">
+                  <li><b>দ্রুত উপায়:</b> কাস্টমার WhatsApp মেসেজ পাঠালে সেখান থেকে নিচে <b>Orders → Manual order</b> যোগ করুন</li>
+                  <li><b>অথবা:</b> যে ফোনে অর্ডার দেখা যায় সেখানে Admin → Orders → <b>Copy JSON</b> → পিসিতে <b>Paste Import</b></li>
+                  <li><b>স্থায়ী সমাধান:</b> Left menu → <b>Order Sync</b> এ Google Apps Script URL সেট করুন</li>
+                </ol>
+                <div class="pc-sync-alert-actions">
+                  <button type="button" class="btn-cms-primary" data-goto="cloud">Order Sync সেটআপ</button>
+                  <button type="button" class="btn-cms-ghost" data-goto="orders">Orders / Import</button>
+                </div>
+              </div>
+            </section>
+
             <section class="stats-grid cms-stats">
               <div class="stat-card stat-total">
                 <div class="stat-info">
@@ -215,37 +234,37 @@
           <!-- PANEL: Orders -->
           <div class="admin-panel" id="panel-orders" data-panel="orders" hidden>
             <div class="orders-api-banner" id="orders-api-banner" hidden>
-              <strong>⚠️ ফোন ও পিসিতে অর্ডার আলাদা দেখায় কেন?</strong>
+              <strong>⚠️ পিসি অ্যাডমিনে অর্ডার আসছে না</strong>
               <p>
-                এখন অর্ডার <b>শুধু যে ডিভাইস/ব্রাউজারে সেভ হয়েছে সেখানেই</b> থাকে।
-                ফোনে দেখলে পিসিতে <b>০</b> আসা স্বাভাবিক। দুই জায়গায় একই অর্ডার দেখতে
-                Left menu → <b>Orders Cloud API</b> সেট করুন, অথবা নিচে Export/Import ব্যবহার করুন।
+                কাস্টমার ফোনে অর্ডার দিলে সেটা <b>কাস্টমারের ফোনে</b> থাকে — আপনার পিসিতে অটো আসে না।
+                নিচে <b>Import</b> করুন, অথবা WhatsApp থেকে Manual order যোগ করুন, অথবা
+                <button type="button" class="btn-linkish" data-goto="cloud">Order Sync</button> সেট করুন।
               </p>
             </div>
 
             <section class="order-sync-box" id="order-sync-box">
               <div class="order-sync-head">
-                <strong>📲↔💻 ফোন → পিসি অর্ডার সরান</strong>
-                <p>ফোনে Export করুন → ফাইল/টেক্সট পিসিতে নিয়ে Import করুন</p>
+                <strong>ফোন → পিসি অর্ডার আনুন</strong>
+                <p>১) ফোনে Admin খুলে Copy JSON → ২) এখানে Paste Import</p>
               </div>
               <div class="order-sync-actions">
-                <button type="button" class="btn-sync-export" id="btn-export-orders">⬇️ Export Orders (ফোন)</button>
-                <button type="button" class="btn-sync-copy" id="btn-copy-orders-json">📋 Copy JSON</button>
+                <button type="button" class="btn-sync-export" id="btn-export-orders">Export (ফোন)</button>
+                <button type="button" class="btn-sync-copy" id="btn-copy-orders-json">Copy JSON (ফোন)</button>
                 <label class="btn-sync-import">
-                  ⬆️ Import Orders (পিসি)
+                  Import (পিসি)
                   <input type="file" id="import-orders-file" accept="application/json,.json,text/plain" hidden />
                 </label>
               </div>
-              <details class="order-sync-paste">
-                <summary>বা JSON পেস্ট করে Import</summary>
-                <textarea id="import-orders-text" rows="4" placeholder='[{"id":"ORD-123"...}]'></textarea>
-                <button type="button" class="btn-action-confirm" id="btn-import-orders-text">✓ Paste Import</button>
+              <details class="order-sync-paste" open>
+                <summary>পিসিতে JSON পেস্ট করে Import</summary>
+                <textarea id="import-orders-text" rows="4" placeholder='ফোন থেকে Copy করা JSON এখানে পেস্ট করুন...'></textarea>
+                <button type="button" class="btn-action-confirm" id="btn-import-orders-text">✓ Paste Import (পিসি)</button>
               </details>
             </section>
 
             <section class="manual-order-section" id="manual-order-section">
-              <details>
-                <summary>＋ WhatsApp theke manual order jog korun</summary>
+              <details open>
+                <summary>＋ WhatsApp থেকে ম্যানুয়াল অর্ডার যোগ (পিসির জন্য সহজ)</summary>
                 <form class="manual-order-form" id="manual-order-form">
                   <label>
                     <span>Nam *</span>
@@ -420,20 +439,26 @@
           <div class="admin-panel" id="panel-cloud" data-panel="cloud" hidden>
             <section class="manage-card">
               <div class="manage-card-head">
-                <h2>Order sync setup</h2>
-                <p>
-                  Live site e admin e order dekhate Google Apps Script Web App URL din.
-                  Details: <code>cloud-orders.gs</code> file.
-                </p>
+                <h2>Order Sync (ফোন + পিসি এক করা)</h2>
+                <p>একবার সেটআপ করলে কাস্টমার ওয়েবসাইটে অর্ডার দিলে <b>পিসি অ্যাডমিনেও</b> দেখা যাবে।</p>
               </div>
+
+              <ol class="cloud-setup-steps">
+                <li>কম্পিউটারে <code>cloud-orders.gs</code> ফাইল খুলুন → সব কোড কপি করুন</li>
+                <li><a href="https://script.google.com" target="_blank" rel="noopener noreferrer">script.google.com</a> → New project → কোড পেস্ট → Save</li>
+                <li>Deploy → New deployment → Type: <b>Web app</b></li>
+                <li>Execute as: <b>Me</b> · Who has access: <b>Anyone</b> → Deploy</li>
+                <li>Web app URL কপি করে নিচে পেস্ট করুন → Save → ডাউনলোড <code>site-config.js</code> GitHub-এ আপলোড</li>
+              </ol>
+
               <form class="manage-form" id="cloud-admin-form">
                 <label class="full">
-                  <span>ordersApi URL</span>
+                  <span>ordersApi URL (Google Apps Script)</span>
                   <input type="url" id="cloud-ordersApi" placeholder="https://script.google.com/macros/s/XXXX/exec" />
                 </label>
-                <button type="submit" class="btn-upload-review">✓ Save Cloud API & Download site-config.js</button>
+                <button type="submit" class="btn-upload-review">✓ Save & Download site-config.js</button>
                 <p class="reviews-upload-hint">
-                  Deploy korar por URL ekhane paste → Save → downloaded site-config.js upload korun.
+                  URL সেট না করলে অর্ডার শুধু অর্ডারদাতার ফোনে থাকবে — পিসি অ্যাডমিনে আসবে না।
                 </p>
               </form>
             </section>
@@ -608,8 +633,8 @@
     </div>
   </div>
 
-  <script src="site-config.js?v=16"></script>
-  <script src="orders-api.js?v=16"></script>
-  <script src="admin.js?v=16"></script>
+  <script src="site-config.js?v=18"></script>
+  <script src="orders-api.js?v=18"></script>
+  <script src="admin.js?v=18"></script>
 </body>
 </html>

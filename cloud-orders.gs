@@ -8,18 +8,37 @@
  *    - Execute as: Me
  *    - Who has access: Anyone
  * 4) Deploy → Web app URL কপি করুন
- * 5) site-config.js এ ordersApi: "এই_URL" বসান → আপলোড
+ * 5) Admin → Order Sync এ URL বসান → Save → site-config.js আপলোড
  *
- * অর্ডারগুলো Google Sheet "Orders" ট্যাবেও সেভ হবে।
+ * অর্ডার Google Sheet "AI-Controller-Orders" এও সেভ হবে।
  */
 
 var SHEET_NAME = 'Orders';
+var PROP_SS_ID = 'ORDERS_SPREADSHEET_ID';
 
 function getSheet_() {
-  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  var props = PropertiesService.getScriptProperties();
+  var ssId = props.getProperty(PROP_SS_ID);
+  var ss = null;
+
+  if (ssId) {
+    try {
+      ss = SpreadsheetApp.openById(ssId);
+    } catch (e) {
+      ss = null;
+    }
+  }
+
+  if (!ss) {
+    ss = SpreadsheetApp.getActiveSpreadsheet();
+  }
+
   if (!ss) {
     ss = SpreadsheetApp.create('AI-Controller-Orders');
   }
+
+  props.setProperty(PROP_SS_ID, ss.getId());
+
   var sheet = ss.getSheetByName(SHEET_NAME);
   if (!sheet) {
     sheet = ss.insertSheet(SHEET_NAME);
