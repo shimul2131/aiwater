@@ -446,9 +446,12 @@
               <ol class="cloud-setup-steps">
                 <li>কম্পিউটারে <code>cloud-orders.gs</code> ফাইল খুলুন → সব কোড কপি করুন</li>
                 <li><a href="https://script.google.com" target="_blank" rel="noopener noreferrer">script.google.com</a> → New project → কোড পেস্ট → Save</li>
+                <li>Run → <b>setup</b> → Allow (একবার অনুমতি দিন)</li>
                 <li>Deploy → New deployment → Type: <b>Web app</b></li>
-                <li>Execute as: <b>Me</b> · Who has access: <b>Anyone</b> → Deploy</li>
-                <li>Web app URL কপি করে নিচে পেস্ট করুন → Save → ডাউনলোড <code>site-config.js</code> GitHub-এ আপলোড</li>
+                <li>Execute as: <b>Me</b> · Who has access: <b>Anyone</b> → Deploy
+                  <br /><small style="color:#b45309">⚠️ "Anyone with a Google account" দিলে Sync কাজ করবে না (লগইন পেজ আসবে)</small>
+                </li>
+                <li>Web app URL (<code>/exec</code>) নিচে পেস্ট → <b>Test Sync</b> → সবুজ হলে Save → <code>site-config.js</code> আপলোড</li>
               </ol>
 
               <form class="manage-form" id="cloud-admin-form">
@@ -456,7 +459,11 @@
                   <span>ordersApi URL (Google Apps Script)</span>
                   <input type="url" id="cloud-ordersApi" placeholder="https://script.google.com/macros/s/XXXX/exec" />
                 </label>
-                <button type="submit" class="btn-upload-review">✓ Save & Download site-config.js</button>
+                <div class="cloud-test-row" style="display:flex;flex-wrap:wrap;gap:0.6rem;align-items:center;margin:0.75rem 0;">
+                  <button type="button" class="btn-cms-primary" id="cloud-test-btn">Test Sync</button>
+                  <button type="submit" class="btn-upload-review">✓ Save & Download site-config.js</button>
+                </div>
+                <p id="cloud-test-result" class="reviews-upload-hint" role="status" aria-live="polite"></p>
                 <p class="reviews-upload-hint">
                   URL সেট না করলে অর্ডার শুধু অর্ডারদাতার ফোনে থাকবে — পিসি অ্যাডমিনে আসবে না।
                 </p>

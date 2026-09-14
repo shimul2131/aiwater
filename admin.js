@@ -1379,6 +1379,33 @@
     });
   }
 
+  const cloudTestBtn = document.getElementById('cloud-test-btn');
+  const cloudTestResult = document.getElementById('cloud-test-result');
+  if (cloudTestBtn) {
+    cloudTestBtn.addEventListener('click', async () => {
+      const ordersApi = ((document.getElementById('cloud-ordersApi') || {}).value || '').trim();
+      if (cloudTestResult) cloudTestResult.textContent = 'টেস্ট হচ্ছে...';
+      cloudTestBtn.disabled = true;
+      try {
+        if (!window.OrdersAPI || !window.OrdersAPI.testCloudConnection) {
+          if (cloudTestResult) cloudTestResult.textContent = 'orders-api.js লোড হয়নি — পেজ রিফ্রেশ করুন';
+          showToast('orders-api.js লোড হয়নি', 'error');
+          return;
+        }
+        const result = await window.OrdersAPI.testCloudConnection(ordersApi);
+        if (cloudTestResult) cloudTestResult.textContent = result.message;
+        showToast(result.message, result.ok ? 'success' : 'error');
+        if (result.ok) await loadOrders();
+      } catch (err) {
+        const msg = '❌ ' + (err && err.message ? err.message : String(err));
+        if (cloudTestResult) cloudTestResult.textContent = msg;
+        showToast(msg, 'error');
+      } finally {
+        cloudTestBtn.disabled = false;
+      }
+    });
+  }
+
   const manualForm = document.getElementById('manual-order-form');
   if (manualForm) {
     manualForm.addEventListener('submit', async (e) => {

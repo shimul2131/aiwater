@@ -4,14 +4,24 @@
  * সেটআপ (একবার):
  * 1) https://script.google.com → New project
  * 2) এই পুরো কোড পেস্ট করুন → Save
- * 3) Deploy → New deployment → Type: Web app
+ * 3) উপরের Run → setup (অনুমতি Allow করুন) — একবার
+ * 4) Deploy → New deployment → Type: Web app
  *    - Execute as: Me
- *    - Who has access: Anyone
- * 4) Deploy → Web app URL কপি করুন
- * 5) Admin → Order Sync এ URL বসান → Save → site-config.js আপলোড
+ *    - Who has access: Anyone  ← খুব জরুরি
+ *      (❌ "Anyone with a Google account" দিলে কাজ করবে না)
+ * 5) Deploy → Web app URL (.../exec) কপি করুন
+ * 6) Admin → Order Sync → URL → Test Sync → Save → site-config.js আপলোড
+ *
+ * কোড বদলালে: Deploy → Manage deployments → Edit → New version → Deploy
  *
  * অর্ডার Google Sheet "AI-Controller-Orders" এও সেভ হবে।
  */
+
+/** একবার Editor থেকে Run করুন — Sheet তৈরি + অনুমতি। */
+function setup() {
+  var sheet = getSheet_();
+  Logger.log('OK sheet: ' + sheet.getParent().getUrl());
+}
 
 var SHEET_NAME = 'Orders';
 var PROP_SS_ID = 'ORDERS_SPREADSHEET_ID';
