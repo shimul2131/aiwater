@@ -70,6 +70,52 @@
     if (savedVideos) Object.assign(videos, JSON.parse(savedVideos));
   } catch (e) {}
   const prices = cfg.prices || {};
+  const linksCfg = cfg.links || {};
+
+  function getWhatsAppNumber() {
+    let n = String(linksCfg.whatsapp || "8801745242000").replace(/[^0-9]/g, "");
+    if (n.startsWith("0")) n = "88" + n;
+    if (!n.startsWith("88") && n.length === 11) n = "88" + n;
+    return n || "8801745242000";
+  }
+
+  function getPhoneDisplay() {
+    return String(linksCfg.phone || "01745242000").trim() || "01745242000";
+  }
+
+  function goToOrderForm(e) {
+    if (e) e.preventDefault();
+    const combo = document.getElementById("price-calc");
+    const box = document.getElementById("order-form-container") || document.getElementById("order-form-box");
+    const form = document.getElementById("customer-order-form");
+    const successCard = document.getElementById("order-success-card");
+    const nameInput = document.getElementById("order-customer-name");
+
+    if (successCard) successCard.hidden = true;
+    if (form) form.hidden = false;
+
+    const target = box || combo;
+    if (target) {
+      target.classList.add("order-form-box--focus");
+      target.scrollIntoView({ behavior: "smooth", block: "start" });
+      setTimeout(() => target.classList.remove("order-form-box--focus"), 2200);
+    }
+    if (nameInput) {
+      setTimeout(() => {
+        try {
+          nameInput.focus({ preventScroll: true });
+        } catch (err) {
+          nameInput.focus();
+        }
+      }, 350);
+    }
+  }
+
+  function initOrderFormLinks() {
+    document.querySelectorAll("[data-go-order-form], #sticky-order-btn").forEach((el) => {
+      el.addEventListener("click", goToOrderForm);
+    });
+  }
 
   function formatBdt(amount) {
     if (!Number.isFinite(amount)) return "";
@@ -116,7 +162,9 @@
     const totalEl = document.getElementById("calc-total");
     const feetLabel = document.getElementById("calc-feet-label");
     const orderBtn = document.getElementById("calc-order-btn");
+    const waBtn = document.getElementById("calc-whatsapp-btn");
     const formTotal = document.getElementById("form-order-total");
+    const submitBtnLabel = document.querySelector("#btn-submit-order span");
 
     function recalc() {
       const ctrl = Number(prices.controller) || 0;
@@ -144,8 +192,15 @@
       if (lineCable) lineCable.textContent = formatBdt(cableTotal);
       if (totalEl) totalEl.textContent = formatBdt(total);
       if (formTotal) formTotal.textContent = formatBdt(total);
+      if (submitBtnLabel) {
+        submitBtnLabel.textContent = "✓ প্যাকেজ অর্ডার কনফার্ম করুন · " + formatBdt(total);
+      }
 
       if (orderBtn) {
+        orderBtn.href = "#order-form-container";
+      }
+
+      if (waBtn) {
         const msg =
           "আমি AI Water Controller অর্ডার করতে চাই।\n" +
           "প্যাকেজ: Controller + Premium Sensor\n" +
@@ -164,8 +219,8 @@
           "\n" +
           "মোট: " +
           formatBdt(total);
-        orderBtn.href =
-          "https://wa.me/8801745242000?text=" + encodeURIComponent(msg);
+        waBtn.href =
+          "https://wa.me/" + getWhatsAppNumber() + "?text=" + encodeURIComponent(msg);
       }
     }
 
@@ -221,26 +276,33 @@
       };
 
       let createdOrder = null;
+      let savedToCloud = false;
 
-      // 1. Try sending to backend server API
+      // 1. Try cloud / backend API
       try {
-        const apiUrl = new URL("api/orders", window.location.href).href;
-        const res = await fetch(apiUrl, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(orderPayload)
-        });
-        if (res.ok) {
-          const json = await res.json();
-          if (json.success && json.order) {
-            createdOrder = json.order;
+        if (window.OrdersAPI) {
+          createdOrder = await window.OrdersAPI.createOrderRemote(orderPayload);
+          savedToCloud = true;
+        } else {
+          const apiUrl = new URL("api/orders", window.location.href).href;
+          const res = await fetch(apiUrl, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(orderPayload)
+          });
+          if (res.ok) {
+            const json = await res.json();
+            if (json.success && json.order) {
+              createdOrder = json.order;
+              savedToCloud = true;
+            }
           }
         }
       } catch (err) {
-        // Offline or static file mode
+        // offline or static host without cloud API
       }
 
-      // 2. Fallback to LocalStorage if server API was unavailable
+      // 2. Fallback order object if API unavailable
       if (!createdOrder) {
         const orderId = "ORD-" + Math.floor(100000 + Math.random() * 900000);
         const now = new Date();
@@ -255,7 +317,7 @@
         };
       }
 
-      // Always sync to LocalStorage
+      // Same-browser backup only (does NOT sync to other phones/admin)
       try {
         const local = localStorage.getItem("ai_controller_orders");
         const list = local ? JSON.parse(local) : [];
@@ -263,7 +325,27 @@
         localStorage.setItem("ai_controller_orders", JSON.stringify(list));
       } catch (e) {}
 
-      // Display Success Card
+      const waMsg = encodeURIComponent(
+        "\u0986\u09b8\u09b8\u09be\u09b2\u09be\u09ae\u09c1 \u0986\u09b2\u09be\u0987\u0995\u09c1\u09ae, \u0986\u09ae\u09bf AI Water Controller \u0993\u09df\u09c7\u09ac\u09b8\u09be\u0987\u099f\u09c7 \u098f\u0995\u099f\u09bf \u0985\u09b0\u09cd\u09a1\u09be\u09b0 \u09a6\u09bf\u09df\u09c7\u099b\u09bf\u0964\n" +
+        "\u0985\u09b0\u09cd\u09a1\u09be\u09b0 \u09a8\u09ae\u09cd\u09ac\u09b0: #" + createdOrder.id + "\n" +
+        "\u09a8\u09be\u09ae: " + createdOrder.name + "\n" +
+        "\u09ae\u09cb\u09ac\u09be\u0987\u09b2: " + createdOrder.phone + "\n" +
+        "\u09aa\u09cd\u09af\u09be\u0995\u09c7\u099c: Controller + Premium Sensor\n" +
+        "\u0995\u09cd\u09af\u09be\u09ac\u09b2: " + createdOrder.cableFeet + " \u09ab\u09c1\u099f\n" +
+        "\u09ae\u09cb\u099f \u09ac\u09bf\u09b2: " + formatBdt(createdOrder.totalPrice) + " (\u0995\u09cd\u09af\u09be\u09b6 \u0985\u09a8 \u09a1\u09c7\u09b2\u09bf\u09ad\u09be\u09b0\u09bf)\n" +
+        "\u09a0\u09bf\u0995\u09be\u09a8\u09be: " + createdOrder.address +
+        (createdOrder.note ? ("\n\u09a8\u09cb\u099f: " + createdOrder.note) : "")
+      );
+      const waUrl = "https://wa.me/" + getWhatsAppNumber() + "?text=" + waMsg;
+
+      // No cloud API -> admin stays empty; open WhatsApp so shop gets the order
+      const hasCloud = window.OrdersAPI && window.OrdersAPI.hasCloudOrdersApi();
+      if (!savedToCloud && !hasCloud) {
+        try {
+          window.open(waUrl, "_blank", "noopener,noreferrer");
+        } catch (e) {}
+      }
+
       orderForm.hidden = true;
       if (successCard) {
         const nameEl = document.getElementById("success-name");
@@ -272,27 +354,27 @@
         const addressEl = document.getElementById("success-address");
         const cableEl = document.getElementById("success-cable");
         const totalEl = document.getElementById("success-total");
+        const hintEl = document.getElementById("success-admin-hint");
 
         if (nameEl) nameEl.textContent = createdOrder.name;
         if (idEl) idEl.textContent = "#" + createdOrder.id;
         if (phoneEl) phoneEl.textContent = createdOrder.phone;
         if (addressEl) addressEl.textContent = createdOrder.address;
-        if (cableEl) cableEl.textContent = `${createdOrder.cableFeet} ফুট (${formatBdt(createdOrder.cablePrice)})`;
+        if (cableEl) cableEl.textContent = createdOrder.cableFeet + " \u09ab\u09c1\u099f (" + formatBdt(createdOrder.cablePrice) + ")";
         if (totalEl) totalEl.textContent = formatBdt(createdOrder.totalPrice);
 
         const waBtn = document.getElementById("success-whatsapp-btn");
         if (waBtn) {
-          const waMsg = encodeURIComponent(
-            `আসসালামু আলাইকুম, আমি AI Water Controller ওয়েবসাইটে একটি অর্ডার দিয়েছি।\n` +
-            `অর্ডার নম্বর: #${createdOrder.id}\n` +
-            `নাম: ${createdOrder.name}\n` +
-            `মোবাইল: ${createdOrder.phone}\n` +
-            `প্যাকেজ: Controller + Premium Sensor\n` +
-            `ক্যাবল: ${createdOrder.cableFeet} ফুট\n` +
-            `মোট বিল: ${formatBdt(createdOrder.totalPrice)} (ক্যাশ অন ডেলিভারি)\n` +
-            `ঠিকানা: ${createdOrder.address}`
-          );
-          waBtn.href = `https://wa.me/8801745242000?text=${waMsg}`;
+          waBtn.href = waUrl;
+          waBtn.textContent = savedToCloud
+            ? "\ud83d\udcac WhatsApp-\u098f \u0985\u09b0\u09cd\u09a1\u09be\u09b0 \u099f\u09cd\u09b0\u09cd\u09af\u09be\u0995 \u0995\u09b0\u09c1\u09a8"
+            : "\ud83d\udcac WhatsApp-\u098f \u0985\u09b0\u09cd\u09a1\u09be\u09b0 \u09aa\u09be\u09a0\u09be\u09a8 (\u099c\u09b0\u09c1\u09b0\u09bf)";
+        }
+
+        if (hintEl) {
+          hintEl.textContent = savedToCloud
+            ? "\u0986\u09aa\u09a8\u09be\u09b0 \u0985\u09b0\u09cd\u09a1\u09be\u09b0 \u0985\u09cd\u09af\u09be\u09a1\u09ae\u09bf\u09a8 \u09aa\u09cd\u09af\u09be\u09a8\u09c7\u09b2\u09c7 \u09aa\u09cc\u0981\u099b\u09c7\u099b\u09c7\u0964 \u0986\u09ae\u09be\u09a6\u09c7\u09b0 \u09aa\u09cd\u09b0\u09a4\u09bf\u09a8\u09bf\u09a7\u09bf \u09b6\u09c0\u0998\u09cd\u09b0\u0987 \u09af\u09cb\u0997\u09be\u09af\u09cb\u0997 \u0995\u09b0\u09ac\u09c7\u0964"
+            : "\u0985\u09b0\u09cd\u09a1\u09be\u09b0 \u09a8\u09bf\u09b6\u09cd\u099a\u09bf\u09a4 \u0995\u09b0\u09a4\u09c7 \u09a8\u09bf\u099a\u09c7\u09b0 WhatsApp \u09ac\u09be\u099f\u09a8\u09c7 \u099a\u09be\u09aa\u09c1\u09a8 \u0993 Send \u0995\u09b0\u09c1\u09a8 \u2014 \u09a4\u09be\u09b9\u09b2\u09c7 \u0986\u09ae\u09b0\u09be \u09b8\u09be\u09a5\u09c7 \u09b8\u09be\u09a5\u09c7 \u09aa\u09be\u09ac\u0964";
         }
 
         successCard.hidden = false;
@@ -301,7 +383,7 @@
 
       if (submitBtn) {
         submitBtn.disabled = false;
-        submitBtn.innerHTML = "<span>✓ অর্ডার কনফার্ম করুন (ক্যাশ অন ডেলিভারি)</span>";
+        submitBtn.innerHTML = "<span>✓ প্যাকেজ অর্ডার কনফার্ম করুন</span>";
       }
     });
 
@@ -320,6 +402,7 @@
   applyPrices();
   initPriceCalculator();
   initCustomerOrderForm();
+  initOrderFormLinks();
 
   setProductImage("home-controller-img", images.controller, images.controllerFallback);
   setProductImage("pkg-controller-img", images.controller, images.controllerFallback);

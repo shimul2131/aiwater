@@ -3,15 +3,17 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>অ্যাডমিন প্যানেল — AI Water Controller</title>
+  <title>Website Admin — aicontroller.store</title>
   <link rel="icon" href="assets/app_icon.png" type="image/png" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link
-    href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap"
+    href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;500;600;700&family=Sora:wght@500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap"
     rel="stylesheet"
   />
-  <link rel="stylesheet" href="admin.css" />
+  <link rel="stylesheet" href="admin.css?v=16" />
+  <link rel="stylesheet" href="pro-ui.css?v=16" />
+  <link rel="stylesheet" href="admin-cms.css?v=16" />
 </head>
 <body>
   <!-- Login Screen -->
@@ -19,13 +21,14 @@
     <div class="login-card">
       <div class="login-header">
         <img src="assets/app_icon.png" alt="Logo" class="login-logo" />
-        <h2>অ্যাডমিন প্যানেল</h2>
-        <p>AI Water Controller অর্ডার ম্যানেজমেন্ট</p>
+        <p class="login-kicker">FR Engineering</p>
+        <h2>Admin Console</h2>
+        <p>Secure access for orders, pricing & site content</p>
       </div>
 
       <form id="login-form">
         <div class="form-group">
-          <label for="admin-pass">অ্যাডমিন পাসওয়ার্ড দিন</label>
+          <label for="admin-pass">Password</label>
           <div class="pass-input-row">
             <input
               type="password"
@@ -40,7 +43,7 @@
         <p class="login-error" id="login-error" hidden>❌ ভুল পাসওয়ার্ড! আবার চেষ্টা করুন।</p>
 
         <button type="submit" class="btn-login" id="btn-login">
-          লগইন করুন →
+          Sign in
         </button>
       </form>
 
@@ -52,205 +55,398 @@
 
   <!-- Admin Dashboard -->
   <div class="dashboard-wrapper" id="dashboard-screen" hidden>
-    <!-- Top Navigation Bar -->
-    <header class="admin-topbar">
-      <div class="topbar-left">
-        <img src="assets/app_icon.png" alt="" class="topbar-logo" />
-        <div>
-          <h1 class="topbar-title">অর্ডার ড্যাশবোর্ড</h1>
-          <p class="topbar-subtitle">AI Water Controller — FR Engineering</p>
-        </div>
-      </div>
-
-      <div class="topbar-right">
-        <div class="live-indicator" id="live-indicator" title="রিয়েলটাইম সংযোগ সক্রিয়">
-          <span class="live-dot"></span>
-          <span>লাইভ</span>
-        </div>
-        <button type="button" class="btn-icon-action" id="btn-sound-toggle" title="সাউন্ড নোটিফিকেশন">
-          <span id="sound-icon">🔊</span>
-        </button>
-        <button type="button" class="btn-icon-action" id="btn-manual-refresh" title="নতুন অর্ডার চেক করুন">
-          🔄 রিফ্রেশ
-        </button>
-        <a href="index.html" target="_blank" class="btn-topbar-link">
-          🌐 ওয়েবসাইট
-        </a>
-        <button type="button" class="btn-logout" id="btn-logout" title="লগআউট">
-          🚪 লগআউট
-        </button>
-      </div>
-    </header>
-
-    <!-- Main Content Container -->
-    <main class="admin-main container">
-      <!-- Notification Toast Container -->
-      <div id="toast-container" class="toast-container"></div>
-
-      <!-- KPI Summary Cards -->
-      <section class="stats-grid">
-        <div class="stat-card stat-total">
-          <div class="stat-icon">📦</div>
-          <div class="stat-info">
-            <span class="stat-label">মোট অর্ডার</span>
-            <strong class="stat-value" id="kpi-total">0</strong>
-          </div>
-        </div>
-
-        <div class="stat-card stat-pending">
-          <div class="stat-icon">⏳</div>
-          <div class="stat-info">
-            <span class="stat-label">অপেক্ষমান (পেন্ডিং)</span>
-            <strong class="stat-value" id="kpi-pending">0</strong>
-          </div>
-          <span class="stat-badge-pulse" id="kpi-pending-badge" hidden>নতুন</span>
-        </div>
-
-        <div class="stat-card stat-confirmed">
-          <div class="stat-icon">✅</div>
-          <div class="stat-info">
-            <span class="stat-label">কনফার্মড অর্ডার</span>
-            <strong class="stat-value" id="kpi-confirmed">0</strong>
-          </div>
-        </div>
-
-        <div class="stat-card stat-delivered">
-          <div class="stat-icon">🚚</div>
-          <div class="stat-info">
-            <span class="stat-label">ডেলিভার্ড</span>
-            <strong class="stat-value" id="kpi-delivered">0</strong>
-          </div>
-        </div>
-
-        <div class="stat-card stat-revenue">
-          <div class="stat-icon">💰</div>
-          <div class="stat-info">
-            <span class="stat-label">কনফার্মড বিক্রয়</span>
-            <strong class="stat-value" id="kpi-revenue">৳০</strong>
-          </div>
-        </div>
-      </section>
-
-      <!-- Filter Tabs and Search Bar -->
-      <section class="toolbar-section">
-        <div class="filter-tabs" id="filter-tabs">
-          <button type="button" class="filter-tab is-active" data-filter="all">
-            সব অর্ডার (<span id="count-all">0</span>)
-          </button>
-          <button type="button" class="filter-tab" data-filter="pending">
-            ⏳ পেন্ডিং (<span id="count-pending">0</span>)
-          </button>
-          <button type="button" class="filter-tab" data-filter="confirmed">
-            ✅ কনফার্মড (<span id="count-confirmed">0</span>)
-          </button>
-          <button type="button" class="filter-tab" data-filter="delivered">
-            🚚 ডেলিভার্ড (<span id="count-delivered">0</span>)
-          </button>
-          <button type="button" class="filter-tab" data-filter="cancelled">
-            ❌ বাতিল (<span id="count-cancelled">0</span>)
-          </button>
-        </div>
-
-        <div class="search-box">
-          <span class="search-icon">🔍</span>
-          <input
-            type="search"
-            id="order-search"
-            placeholder="নাম, ফোন নম্বর বা অর্ডার আইডি দিয়ে খুঁজুন..."
-            aria-label="অর্ডার খুঁজুন"
-          />
-          <button type="button" class="btn-clear-search" id="btn-clear-search" hidden aria-label="সার্চ মুছুন">✕</button>
-        </div>
-      </section>
-
-      <!-- Order List Container -->
-      <section class="orders-section">
-        <!-- Empty State -->
-        <div class="empty-state" id="orders-empty" hidden>
-          <div class="empty-icon">📭</div>
-          <h3>কোনো অর্ডার পাওয়া যায়নি</h3>
-          <p id="empty-message">এখনও কোনো গ্রাহক অর্ডার করেননি। গ্রাহক অর্ডার করলেই এখানে চলে আসবে।</p>
-        </div>
-
-        <!-- Orders Grid / Cards -->
-        <div class="orders-grid" id="orders-grid">
-          <!-- Rendered dynamically via admin.js -->
-        </div>
-      </section>
-
-      <!-- Video Links Manager -->
-      <section class="reviews-admin-section" id="videos-admin">
-        <div class="reviews-admin-head">
+    <div class="admin-shell">
+            <aside class="admin-sidebar" id="admin-sidebar">
+        <div class="sidebar-brand">
+          <img src="assets/app_icon.png" alt="" />
           <div>
-            <h2>🎬 প্রোডাক্ট ভিডিও লিংক</h2>
-            <p>YouTube লিংক দিন → সেভ করুন → ডাউনলোড হওয়া <code>site-config.js</code> GitHub-এ আপলোড করুন</p>
+            <strong>aicontroller.store</strong>
+            <span>Website Admin</span>
           </div>
         </div>
 
-        <form class="videos-admin-form" id="videos-admin-form">
-          <label>
-            <span>App Setup Video</span>
-            <input type="url" id="video-appSetup" placeholder="https://youtu.be/xxxxxx" />
-          </label>
-          <label>
-            <span>Controller Video</span>
-            <input type="url" id="video-controller" placeholder="https://youtu.be/xxxxxx" />
-          </label>
-          <label>
-            <span>Installation Video</span>
-            <input type="url" id="video-installation" placeholder="https://youtu.be/xxxxxx" />
-          </label>
-          <label>
-            <span>App Details Video</span>
-            <input type="url" id="video-appDetails" placeholder="https://youtu.be/xxxxxx" />
-          </label>
-
-          <button type="submit" class="btn-upload-review" id="btn-save-videos">
-            ✓ ভিডিও লিংক সেভ ও site-config.js ডাউনলোড
+        <nav class="sidebar-nav" id="sidebar-nav" aria-label="Admin menu">
+          <p class="sidebar-label">Main</p>
+          <button type="button" class="sidebar-link is-active" data-panel="dashboard">
+            <span class="sidebar-ico">⌂</span>
+            <span>Dashboard</span>
           </button>
-          <p class="reviews-upload-hint">
-            সেভ করলে নতুন <strong>site-config.js</strong> ডাউনলোড হবে। সেই ফাইল GitHub-এ আপলোড করলেই সাইটে ভিডিও দেখাবে।
-          </p>
-        </form>
-      </section>
+          <button type="button" class="sidebar-link" data-panel="orders">
+            <span class="sidebar-ico">☰</span>
+            <span>Orders</span>
+            <span class="sidebar-badge" id="sidebar-pending-count" hidden>0</span>
+          </button>
 
-      <!-- Customer Reviews Manager -->
-      <section class="reviews-admin-section" id="reviews-admin">
-        <div class="reviews-admin-head">
-          <div>
-            <h2>কাস্টমার কমেন্ট স্লাইডশো</h2>
-            <p>WhatsApp/Messenger কমেন্টের স্ক্রিনশট আপলোড করুন — ওয়েবসাইটে অটো স্লাইড হবে</p>
-          </div>
+          <p class="sidebar-label">Website</p>
+          <button type="button" class="sidebar-link" data-panel="prices">
+            <span class="sidebar-ico">৳</span>
+            <span>Pricing</span>
+          </button>
+          <button type="button" class="sidebar-link" data-panel="videos">
+            <span class="sidebar-ico">▶</span>
+            <span>Videos</span>
+          </button>
+          <button type="button" class="sidebar-link" data-panel="reviews">
+            <span class="sidebar-ico">★</span>
+            <span>Reviews</span>
+          </button>
+          <button type="button" class="sidebar-link" data-panel="links">
+            <span class="sidebar-ico">⛓</span>
+            <span>Contact Links</span>
+          </button>
+
+          <p class="sidebar-label">System</p>
+          <button type="button" class="sidebar-link" data-panel="cloud">
+            <span class="sidebar-ico">☁</span>
+            <span>Order Sync</span>
+          </button>
+        </nav>
+
+        <div class="sidebar-foot">
+          <a class="sidebar-site-link" href="index.html" target="_blank" rel="noopener noreferrer">Open website ↗</a>
+          <button type="button" class="sidebar-logout" id="btn-logout">Sign out</button>
         </div>
+      </aside>
 
-        <form class="reviews-upload-box" id="review-upload-form">
-          <label class="reviews-file-label" for="review-file-input">
-            📷 স্ক্রিনশট সিলেক্ট করুন (PNG / JPG)
-            <input type="file" id="review-file-input" accept="image/png,image/jpeg,image/webp,image/gif" required />
-          </label>
-          <input
-            type="text"
-            id="review-alt-input"
-            placeholder="ঐচ্ছিক ক্যাপশন (যেমন: কাস্টমার রিভিউ)"
-          />
-          <button type="submit" class="btn-upload-review" id="btn-upload-review">
-            ✓ আপলোড ও সাইটে যোগ করুন
-          </button>
-          <p class="reviews-upload-hint">
-            অথবা `assets/reviews/` ফোল্ডারে ছবি রেখে `site-config.js` এর `reviews` তালিকায় পাথ যোগ করতে পারেন।
-          </p>
-        </form>
+      <div class="admin-workspace">
+                <header class="admin-topbar">
+          <div class="topbar-left">
+            <button type="button" class="btn-sidebar-toggle" id="btn-sidebar-toggle" aria-label="Menu">☰</button>
+            <div>
+              <p class="topbar-crumb" id="panel-crumb">Main / Dashboard</p>
+              <h1 class="topbar-title" id="panel-page-title">Dashboard</h1>
+            </div>
+          </div>
+          <div class="topbar-right">
+            <div class="live-indicator" id="live-indicator" title="Live">
+              <span class="live-dot"></span>
+              <span>Live</span>
+            </div>
+            <button type="button" class="btn-icon-action" id="btn-sound-toggle" title="Sound">
+              <span id="sound-icon">🔊</span>
+            </button>
+            <button type="button" class="btn-icon-action" id="btn-manual-refresh" title="Refresh">↻</button>
+            <a class="btn-topbar-site" href="index.html" target="_blank" rel="noopener noreferrer">View site</a>
+            <div class="topbar-user">
+              <span class="topbar-user-avatar">A</span>
+              <span class="topbar-user-name">Admin</span>
+            </div>
+          </div>
+        </header>
 
-        <div class="reviews-admin-grid" id="reviews-admin-grid"></div>
-        <p class="reviews-admin-empty" id="reviews-admin-empty" hidden>এখনও কোনো কমেন্ট স্ক্রিনশট নেই।</p>
-      </section>
-    </main>
+        <main class="admin-main">
+          <div id="toast-container" class="toast-container"></div>
 
-    <!-- Footer -->
-    <footer class="admin-footer">
-      <p>AI Water Controller Admin Management Portal · FR Engineering Solutions</p>
-    </footer>
+          
+          <!-- PANEL: Dashboard -->
+          <div class="admin-panel is-active" id="panel-dashboard" data-panel="dashboard">
+            <section class="cms-hero">
+              <div>
+                <h2>Welcome back</h2>
+                <p>aicontroller.store website control panel — orders, pricing & content in one place.</p>
+              </div>
+              <div class="cms-hero-actions">
+                <button type="button" class="btn-cms-primary" data-goto="orders">Manage orders</button>
+                <a class="btn-cms-ghost" href="index.html" target="_blank" rel="noopener noreferrer">Visit website</a>
+              </div>
+            </section>
+
+            <section class="stats-grid cms-stats">
+              <div class="stat-card stat-total">
+                <div class="stat-info">
+                  <span class="stat-label">Total orders</span>
+                  <strong class="stat-value" id="kpi-total">0</strong>
+                </div>
+              </div>
+              <div class="stat-card stat-pending">
+                <div class="stat-info">
+                  <span class="stat-label">Pending</span>
+                  <strong class="stat-value" id="kpi-pending">0</strong>
+                </div>
+                <span class="stat-badge-pulse" id="kpi-pending-badge" hidden>New</span>
+              </div>
+              <div class="stat-card stat-confirmed">
+                <div class="stat-info">
+                  <span class="stat-label">Confirmed</span>
+                  <strong class="stat-value" id="kpi-confirmed">0</strong>
+                </div>
+              </div>
+              <div class="stat-card stat-delivered">
+                <div class="stat-info">
+                  <span class="stat-label">Delivered</span>
+                  <strong class="stat-value" id="kpi-delivered">0</strong>
+                </div>
+              </div>
+              <div class="stat-card stat-revenue">
+                <div class="stat-info">
+                  <span class="stat-label">Sales</span>
+                  <strong class="stat-value" id="kpi-revenue">৳০</strong>
+                </div>
+              </div>
+            </section>
+
+            <section class="cms-grid-2">
+              <div class="cms-card">
+                <div class="cms-card-head">
+                  <h3>Quick actions</h3>
+                </div>
+                <div class="cms-quick-grid">
+                  <button type="button" class="cms-quick" data-goto="orders"><strong>Orders</strong><span>Confirm & deliver</span></button>
+                  <button type="button" class="cms-quick" data-goto="prices"><strong>Pricing</strong><span>Update product prices</span></button>
+                  <button type="button" class="cms-quick" data-goto="videos"><strong>Videos</strong><span>YouTube links</span></button>
+                  <button type="button" class="cms-quick" data-goto="reviews"><strong>Reviews</strong><span>Upload screenshots</span></button>
+                  <button type="button" class="cms-quick" data-goto="links"><strong>Links</strong><span>WhatsApp & Play Store</span></button>
+                  <button type="button" class="cms-quick" data-goto="cloud"><strong>Sync</strong><span>Phone ↔ PC orders</span></button>
+                </div>
+              </div>
+
+              <div class="cms-card">
+                <div class="cms-card-head">
+                  <h3>Recent orders</h3>
+                  <button type="button" class="btn-cms-text" data-goto="orders">View all</button>
+                </div>
+                <div class="cms-recent-list" id="dashboard-recent-orders">
+                  <p class="cms-empty">No orders yet.</p>
+                </div>
+              </div>
+            </section>
+          </div>
+
+          <!-- PANEL: Orders -->
+          <div class="admin-panel" id="panel-orders" data-panel="orders" hidden>
+            <div class="orders-api-banner" id="orders-api-banner" hidden>
+              <strong>⚠️ ফোন ও পিসিতে অর্ডার আলাদা দেখায় কেন?</strong>
+              <p>
+                এখন অর্ডার <b>শুধু যে ডিভাইস/ব্রাউজারে সেভ হয়েছে সেখানেই</b> থাকে।
+                ফোনে দেখলে পিসিতে <b>০</b> আসা স্বাভাবিক। দুই জায়গায় একই অর্ডার দেখতে
+                Left menu → <b>Orders Cloud API</b> সেট করুন, অথবা নিচে Export/Import ব্যবহার করুন।
+              </p>
+            </div>
+
+            <section class="order-sync-box" id="order-sync-box">
+              <div class="order-sync-head">
+                <strong>📲↔💻 ফোন → পিসি অর্ডার সরান</strong>
+                <p>ফোনে Export করুন → ফাইল/টেক্সট পিসিতে নিয়ে Import করুন</p>
+              </div>
+              <div class="order-sync-actions">
+                <button type="button" class="btn-sync-export" id="btn-export-orders">⬇️ Export Orders (ফোন)</button>
+                <button type="button" class="btn-sync-copy" id="btn-copy-orders-json">📋 Copy JSON</button>
+                <label class="btn-sync-import">
+                  ⬆️ Import Orders (পিসি)
+                  <input type="file" id="import-orders-file" accept="application/json,.json,text/plain" hidden />
+                </label>
+              </div>
+              <details class="order-sync-paste">
+                <summary>বা JSON পেস্ট করে Import</summary>
+                <textarea id="import-orders-text" rows="4" placeholder='[{"id":"ORD-123"...}]'></textarea>
+                <button type="button" class="btn-action-confirm" id="btn-import-orders-text">✓ Paste Import</button>
+              </details>
+            </section>
+
+            <section class="manual-order-section" id="manual-order-section">
+              <details>
+                <summary>＋ WhatsApp theke manual order jog korun</summary>
+                <form class="manual-order-form" id="manual-order-form">
+                  <label>
+                    <span>Nam *</span>
+                    <input type="text" id="manual-name" required placeholder="Customer name" />
+                  </label>
+                  <label>
+                    <span>Mobile *</span>
+                    <input type="tel" id="manual-phone" required placeholder="01XXXXXXXXX" />
+                  </label>
+                  <label class="full">
+                    <span>Address *</span>
+                    <input type="text" id="manual-address" required placeholder="Full address" />
+                  </label>
+                  <label>
+                    <span>Cable (ft)</span>
+                    <input type="number" id="manual-cable" min="0" max="500" value="30" />
+                  </label>
+                  <label class="full">
+                    <span>Note</span>
+                    <input type="text" id="manual-note" placeholder="Optional" />
+                  </label>
+                  <button type="submit" class="btn-action-confirm">✓ Add Order</button>
+                </form>
+              </details>
+            </section>
+
+            
+
+            <section class="toolbar-section">
+              <div class="filter-tabs" id="filter-tabs">
+                <button type="button" class="filter-tab is-active" data-filter="all">
+                  All (<span id="count-all">0</span>)
+                </button>
+                <button type="button" class="filter-tab" data-filter="pending">
+                  Pending (<span id="count-pending">0</span>)
+                </button>
+                <button type="button" class="filter-tab" data-filter="confirmed">
+                  Confirmed (<span id="count-confirmed">0</span>)
+                </button>
+                <button type="button" class="filter-tab" data-filter="delivered">
+                  Delivered (<span id="count-delivered">0</span>)
+                </button>
+                <button type="button" class="filter-tab" data-filter="cancelled">
+                  Cancelled (<span id="count-cancelled">0</span>)
+                </button>
+              </div>
+              <div class="search-box">
+                <span class="search-icon">🔍</span>
+                <input type="search" id="order-search" placeholder="Name, phone or order ID..." aria-label="Search orders" />
+                <button type="button" class="btn-clear-search" id="btn-clear-search" hidden aria-label="Clear">✕</button>
+              </div>
+            </section>
+
+            <section class="orders-section">
+              <div class="empty-state" id="orders-empty" hidden>
+                <div class="empty-icon">📭</div>
+                <h3>No orders found</h3>
+                <p id="empty-message">Customer order dile ekhane asbe.</p>
+              </div>
+              <div class="orders-grid" id="orders-grid"></div>
+            </section>
+          </div>
+
+          <!-- PANEL: Prices -->
+          <div class="admin-panel" id="panel-prices" data-panel="prices" hidden>
+            <section class="manage-card">
+              <div class="manage-card-head">
+                <h2>Website pricing</h2>
+                <p>Controller, Sensor & Cable price update korun. Save korle <code>site-config.js</code> download hobe — GitHub e upload korun.</p>
+              </div>
+              <form class="manage-form" id="prices-admin-form">
+                <label>
+                  <span>Controller Price (৳)</span>
+                  <input type="number" id="price-controller" min="0" step="1" required />
+                </label>
+                <label>
+                  <span>Premium Sensor Price (৳)</span>
+                  <input type="number" id="price-sensor" min="0" step="1" required />
+                </label>
+                <label>
+                  <span>Cable per foot (৳)</span>
+                  <input type="number" id="price-cable" min="0" step="1" required />
+                </label>
+                <div class="manage-preview" id="price-preview">Package start: ৳0</div>
+                <button type="submit" class="btn-upload-review">✓ Save Price & Download site-config.js</button>
+              </form>
+            </section>
+          </div>
+
+          <!-- PANEL: Links -->
+          <div class="admin-panel" id="panel-links" data-panel="links" hidden>
+            <section class="manage-card">
+              <div class="manage-card-head">
+                <h2>Contact & store links</h2>
+                <p>Play Store, WhatsApp & Phone number. Save → download → upload <code>site-config.js</code>.</p>
+              </div>
+              <form class="manage-form" id="links-admin-form">
+                <label class="full">
+                  <span>Google Play Store link</span>
+                  <input type="url" id="link-playStore" placeholder="https://play.google.com/store/apps/details?id=..." />
+                </label>
+                <label>
+                  <span>WhatsApp number (880...)</span>
+                  <input type="text" id="link-whatsapp" placeholder="8801745242000" />
+                </label>
+                <label>
+                  <span>Phone (display / call)</span>
+                  <input type="text" id="link-phone" placeholder="01745242000" />
+                </label>
+                <button type="submit" class="btn-upload-review">✓ Save Links & Download site-config.js</button>
+              </form>
+            </section>
+          </div>
+
+          <!-- PANEL: Videos -->
+          <div class="admin-panel" id="panel-videos" data-panel="videos" hidden>
+            <section class="manage-card" id="videos-admin">
+              <div class="manage-card-head">
+                <h2>Product videos</h2>
+                <p>YouTube link din → Save → download <code>site-config.js</code> → GitHub upload.</p>
+              </div>
+              <form class="manage-form" id="videos-admin-form">
+                <label class="full">
+                  <span>App Setup Video</span>
+                  <input type="url" id="video-appSetup" placeholder="https://youtu.be/xxxxxx" />
+                </label>
+                <label class="full">
+                  <span>Controller Video</span>
+                  <input type="url" id="video-controller" placeholder="https://youtu.be/xxxxxx" />
+                </label>
+                <label class="full">
+                  <span>Installation Video</span>
+                  <input type="url" id="video-installation" placeholder="https://youtu.be/xxxxxx" />
+                </label>
+                <label class="full">
+                  <span>App Details Video</span>
+                  <input type="url" id="video-appDetails" placeholder="https://youtu.be/xxxxxx" />
+                </label>
+                <button type="submit" class="btn-upload-review" id="btn-save-videos">
+                  ✓ Save Videos & Download site-config.js
+                </button>
+              </form>
+            </section>
+          </div>
+
+          <!-- PANEL: Reviews -->
+          <div class="admin-panel" id="panel-reviews" data-panel="reviews" hidden>
+            <section class="manage-card" id="reviews-admin">
+              <div class="manage-card-head">
+                <h2>Customer reviews</h2>
+                <p>WhatsApp/Messenger screenshot upload — website e auto slideshow.</p>
+              </div>
+              <form class="reviews-upload-box" id="review-upload-form">
+                <label class="reviews-file-label" for="review-file-input">
+                  📷 Select screenshot (PNG / JPG)
+                  <input type="file" id="review-file-input" accept="image/png,image/jpeg,image/webp,image/gif" required />
+                </label>
+                <input type="text" id="review-alt-input" placeholder="Optional caption" />
+                <button type="submit" class="btn-upload-review" id="btn-upload-review">
+                  ✓ Upload & Add to site
+                </button>
+                <p class="reviews-upload-hint">
+                  Or put images in <code>assets/reviews/</code> and add paths in <code>site-config.js</code> reviews list.
+                </p>
+              </form>
+              <div class="reviews-admin-grid" id="reviews-admin-grid"></div>
+              <p class="reviews-admin-empty" id="reviews-admin-empty" hidden>No review screenshots yet.</p>
+            </section>
+          </div>
+
+          <!-- PANEL: Cloud API -->
+          <div class="admin-panel" id="panel-cloud" data-panel="cloud" hidden>
+            <section class="manage-card">
+              <div class="manage-card-head">
+                <h2>Order sync setup</h2>
+                <p>
+                  Live site e admin e order dekhate Google Apps Script Web App URL din.
+                  Details: <code>cloud-orders.gs</code> file.
+                </p>
+              </div>
+              <form class="manage-form" id="cloud-admin-form">
+                <label class="full">
+                  <span>ordersApi URL</span>
+                  <input type="url" id="cloud-ordersApi" placeholder="https://script.google.com/macros/s/XXXX/exec" />
+                </label>
+                <button type="submit" class="btn-upload-review">✓ Save Cloud API & Download site-config.js</button>
+                <p class="reviews-upload-hint">
+                  Deploy korar por URL ekhane paste → Save → downloaded site-config.js upload korun.
+                </p>
+              </form>
+            </section>
+          </div>
+        </main>
+
+        <footer class="admin-footer">
+          <p>AI Water Controller Admin · FR Engineering Solutions</p>
+        </footer>
+      </div>
+    </div>
   </div>
+
 
   <!-- Audio Element for Order Chime (Base64 short pleasant chime) -->
   <audio id="order-sound" preload="auto">
@@ -412,7 +608,8 @@
     </div>
   </div>
 
-  <script src="site-config.js?v=6"></script>
-  <script src="admin.js?v=8"></script>
+  <script src="site-config.js?v=16"></script>
+  <script src="orders-api.js?v=16"></script>
+  <script src="admin.js?v=16"></script>
 </body>
 </html>

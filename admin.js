@@ -137,7 +137,9 @@
     fetchOrders(true);
     startPolling();
     if (typeof fetchAdminReviews === "function") fetchAdminReviews();
-    if (typeof fillVideoForm === "function") fillVideoForm();
+    if (typeof fillManageForms === "function") fillManageForms();
+    else if (typeof fillVideoForm === "function") fillVideoForm();
+    if (typeof showAdminPanel === "function") showAdminPanel("dashboard");
   }
 
   if (loginForm && adminPassInput) {
@@ -188,8 +190,17 @@
   // DATA FETCHING & SYNC
   // ====================================================
   function getApiUrl(subpath = '') {
+    if (window.OrdersAPI) return window.OrdersAPI.getOrdersApiUrl(subpath);
     const rel = 'api/orders' + (subpath ? '/' + subpath : '');
     return new URL(rel, window.location.href).href;
+  }
+
+  function updateOrdersApiBanner() {
+    const banner = document.getElementById('orders-api-banner');
+    const syncBox = document.getElementById('order-sync-box');
+    const hasCloud = window.OrdersAPI && window.OrdersAPI.hasCloudOrdersApi();
+    if (banner) banner.hidden = !!hasCloud;
+    if (syncBox) syncBox.hidden = !!hasCloud;
   }
 
   function readLocalOrders() {
@@ -253,15 +264,19 @@
     const localOrders = readLocalOrders();
 
     try {
-      const res = await fetch(getApiUrl(), { cache: 'no-store' });
-      if (res.ok) {
-        const json = await res.json();
-        if (json.success && Array.isArray(json.orders)) {
-          serverOrders = json.orders;
+      if (window.OrdersAPI) {
+        serverOrders = await window.OrdersAPI.fetchOrdersList();
+      } else {
+        const res = await fetch(getApiUrl(), { cache: 'no-store' });
+        if (res.ok) {
+          const json = await res.json();
+          if (json.success && Array.isArray(json.orders)) {
+            serverOrders = json.orders;
+          }
         }
       }
     } catch (err) {
-      // Server not reachable (static file server mode)
+      // Server/cloud not reachable
     }
 
     const fetched = serverOrders
@@ -289,6 +304,7 @@
 
     previousOrderIds = new Set(fetched.map(o => o.id));
     orders = fetched;
+    updateOrdersApiBanner();
     renderAll();
   }
 
@@ -302,13 +318,17 @@
   // Save Orders (handles both API and LocalStorage)
   async function updateOrderStatus(orderId, nextStatus) {
     try {
-      const res = await fetch(getApiUrl(encodeURIComponent(orderId)), {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ status: nextStatus })
-      });
-      if (res.ok) {
-        await res.json().catch(() => ({}));
+      if (window.OrdersAPI) {
+        await window.OrdersAPI.updateOrderRemote(orderId, nextStatus);
+      } else {
+        const res = await fetch(getApiUrl(encodeURIComponent(orderId)), {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ status: nextStatus })
+        });
+        if (res.ok) {
+          await res.json().catch(() => ({}));
+        }
       }
     } catch (e) {}
 
@@ -350,7 +370,11 @@
     if (!confirm(`আপনি কি নিশ্চিত যে অর্ডার #${orderId} মুছে ফেলতে চান?`)) return;
 
     try {
-      await fetch(getApiUrl(encodeURIComponent(orderId)), { method: 'DELETE' });
+      if (window.OrdersAPI) {
+        await window.OrdersAPI.deleteOrderRemote(orderId);
+      } else {
+        await fetch(getApiUrl(encodeURIComponent(orderId)), { method: 'DELETE' });
+      }
     } catch (e) {}
 
     orders = orders.filter(o => o.id !== orderId);
@@ -368,6 +392,29 @@
   function renderAll() {
     updateKPIs();
     renderOrders();
+    renderDashboardRecent();
+  }
+
+  function renderDashboardRecent() {
+    const wrap = document.getElementById('dashboard-recent-orders');
+    if (!wrap) return;
+    const recent = (orders || []).slice(0, 6);
+    if (!recent.length) {
+      wrap.innerHTML = '<p class="cms-empty">No orders yet. New website orders will appear here.</p>';
+      return;
+    }
+    wrap.innerHTML = recent.map((o) => {
+      const status = o.status || 'pending';
+      return (
+        '<button type="button" class="cms-recent-item" data-goto="orders">' +
+          '<div>' +
+            '<strong>#' + escapeHtml(o.id) + '</strong>' +
+            '<span>' + escapeHtml(o.name || 'Customer') + ' · ' + escapeHtml(o.phone || '') + '</span>' +
+          '</div>' +
+          '<em class="cms-status cms-status-' + status + '">' + status + '</em>' +
+        '</button>'
+      );
+    }).join('');
   }
 
   function updateKPIs() {
@@ -390,7 +437,12 @@
 
     if (kpiPendingBadge) {
       kpiPendingBadge.hidden = pending === 0;
-      kpiPendingBadge.textContent = `${pending} টি নতুন`;
+      kpiPendingBadge.textContent = pending + ' new';
+    }
+    const sideBadge = document.getElementById('sidebar-pending-count');
+    if (sideBadge) {
+      sideBadge.hidden = pending === 0;
+      sideBadge.textContent = String(pending);
     }
 
     if (countAll) countAll.textContent = String(total);
@@ -1024,9 +1076,81 @@
   }
 
   // ====================================================
-  // VIDEO LINKS MANAGER
+  // SIDEBAR + MANAGE (price / links / videos / cloud)
   // ====================================================
+  const PANEL_TITLES = {
+    dashboard: 'Dashboard',
+    orders: 'Orders',
+    prices: 'Pricing',
+    links: 'Contact Links',
+    videos: 'Videos',
+    reviews: 'Reviews',
+    cloud: 'Order Sync'
+  };
+
+  const PANEL_CRUMBS = {
+    dashboard: 'Main / Dashboard',
+    orders: 'Main / Orders',
+    prices: 'Website / Pricing',
+    links: 'Website / Contact Links',
+    videos: 'Website / Videos',
+    reviews: 'Website / Reviews',
+    cloud: 'System / Order Sync'
+  };
+
+  function showAdminPanel(panelId) {
+    const id = panelId || 'dashboard';
+    document.querySelectorAll('.admin-panel').forEach((panel) => {
+      const on = panel.getAttribute('data-panel') === id;
+      panel.hidden = !on;
+      panel.classList.toggle('is-active', on);
+    });
+    document.querySelectorAll('.sidebar-link').forEach((btn) => {
+      btn.classList.toggle('is-active', btn.getAttribute('data-panel') === id);
+    });
+    const title = document.getElementById('panel-page-title');
+    const crumb = document.getElementById('panel-crumb');
+    if (title) title.textContent = PANEL_TITLES[id] || 'Admin';
+    if (crumb) crumb.textContent = PANEL_CRUMBS[id] || 'Admin';
+    document.body.classList.remove('sidebar-open');
+    if (id === 'orders' || id === 'dashboard') {
+      if (typeof renderAll === 'function') renderAll();
+    }
+  }
+
+  const sidebarNav = document.getElementById('sidebar-nav');
+  if (sidebarNav) {
+    sidebarNav.addEventListener('click', (e) => {
+      const btn = e.target.closest('.sidebar-link');
+      if (!btn) return;
+      showAdminPanel(btn.getAttribute('data-panel'));
+    });
+  }
+
+  document.addEventListener('click', (e) => {
+    const go = e.target.closest('[data-goto]');
+    if (!go) return;
+    const panel = go.getAttribute('data-goto');
+    if (panel) showAdminPanel(panel);
+  });
+
+  const btnSidebarToggle = document.getElementById('btn-sidebar-toggle');
+  if (btnSidebarToggle) {
+    btnSidebarToggle.addEventListener('click', () => {
+      document.body.classList.toggle('sidebar-open');
+    });
+  }
+  document.addEventListener('click', (e) => {
+    if (!document.body.classList.contains('sidebar-open')) return;
+    if (e.target.closest('.admin-sidebar') || e.target.closest('#btn-sidebar-toggle')) return;
+    document.body.classList.remove('sidebar-open');
+  });
+
   const videosForm = document.getElementById('videos-admin-form');
+  const pricesForm = document.getElementById('prices-admin-form');
+  const linksForm = document.getElementById('links-admin-form');
+  const cloudForm = document.getElementById('cloud-admin-form');
+
   const videoInputs = {
     appSetup: document.getElementById('video-appSetup'),
     controller: document.getElementById('video-controller'),
@@ -1034,44 +1158,122 @@
     appDetails: document.getElementById('video-appDetails')
   };
 
-  function fillVideoForm() {
+  function readManageStateFromDom() {
     const cfg = window.SITE_CONFIG || {};
-    let videos = (cfg.videos || {});
+    const videos = {
+      appSetup: (videoInputs.appSetup && videoInputs.appSetup.value || '').trim(),
+      controller: (videoInputs.controller && videoInputs.controller.value || '').trim(),
+      installation: (videoInputs.installation && videoInputs.installation.value || '').trim(),
+      appDetails: (videoInputs.appDetails && videoInputs.appDetails.value || '').trim()
+    };
+    const prices = {
+      controller: Number((document.getElementById('price-controller') || {}).value) || Number((cfg.prices || {}).controller) || 4500,
+      sensor: Number((document.getElementById('price-sensor') || {}).value) || Number((cfg.prices || {}).sensor) || 1550,
+      cablePerFoot: Number((document.getElementById('price-cable') || {}).value) || Number((cfg.prices || {}).cablePerFoot) || 8
+    };
+    const links = {
+      playStore: ((document.getElementById('link-playStore') || {}).value || '').trim(),
+      whatsapp: ((document.getElementById('link-whatsapp') || {}).value || '').trim(),
+      phone: ((document.getElementById('link-phone') || {}).value || '').trim()
+    };
+    const ordersApi = ((document.getElementById('cloud-ordersApi') || {}).value || '').trim();
+    return { videos, prices, links, ordersApi };
+  }
+
+  function fillManageForms() {
+    const cfg = window.SITE_CONFIG || {};
+    let videos = Object.assign({}, cfg.videos || {});
     try {
       const saved = localStorage.getItem('ai_controller_videos');
-      if (saved) videos = { ...videos, ...JSON.parse(saved) };
+      if (saved) videos = Object.assign(videos, JSON.parse(saved));
     } catch (e) {}
 
     Object.keys(videoInputs).forEach((key) => {
       if (videoInputs[key]) videoInputs[key].value = videos[key] || '';
     });
+
+    const prices = cfg.prices || {};
+    const pc = document.getElementById('price-controller');
+    const ps = document.getElementById('price-sensor');
+    const pcf = document.getElementById('price-cable');
+    if (pc) pc.value = prices.controller != null ? prices.controller : 4500;
+    if (ps) ps.value = prices.sensor != null ? prices.sensor : 1550;
+    if (pcf) pcf.value = prices.cablePerFoot != null ? prices.cablePerFoot : 8;
+    updatePricePreview();
+
+    const links = cfg.links || {};
+    const lp = document.getElementById('link-playStore');
+    const lw = document.getElementById('link-whatsapp');
+    const lph = document.getElementById('link-phone');
+    if (lp) lp.value = links.playStore || '';
+    if (lw) lw.value = links.whatsapp || '8801745242000';
+    if (lph) lph.value = links.phone || '01745242000';
+
+    const cloud = document.getElementById('cloud-ordersApi');
+    if (cloud) cloud.value = cfg.ordersApi || '';
   }
 
-  function buildSiteConfigJs(videos) {
-    const cfg = window.SITE_CONFIG || {};
-    const links = cfg.links || {};
-    const images = cfg.images || {};
-    const prices = cfg.prices || {};
-    const reviews = cfg.reviews || [];
+  function fillVideoForm() {
+    fillManageForms();
+  }
 
+  function updatePricePreview() {
+    const el = document.getElementById('price-preview');
+    if (!el) return;
+    const c = Number((document.getElementById('price-controller') || {}).value) || 0;
+    const s = Number((document.getElementById('price-sensor') || {}).value) || 0;
+    el.textContent = 'Package start (controller + sensor): BDT ' + (c + s).toLocaleString('en-US');
+  }
+
+  ['price-controller', 'price-sensor', 'price-cable'].forEach((id) => {
+    const el = document.getElementById(id);
+    if (el) el.addEventListener('input', updatePricePreview);
+  });
+
+  function buildSiteConfigJs(overrides) {
+    const cfg = window.SITE_CONFIG || {};
+    const state = Object.assign({
+      videos: cfg.videos || {},
+      prices: cfg.prices || {},
+      links: cfg.links || {},
+      ordersApi: cfg.ordersApi || ''
+    }, overrides || {}, readManageStateFromDom(), overrides || {});
+
+    // prefer explicit overrides for the fields being saved
+    if (overrides) {
+      if (overrides.videos) state.videos = overrides.videos;
+      if (overrides.prices) state.prices = overrides.prices;
+      if (overrides.links) state.links = overrides.links;
+      if (overrides.ordersApi != null) state.ordersApi = overrides.ordersApi;
+    }
+
+    const images = cfg.images || {};
+    const reviews = cfg.reviews || [];
     const q = (v) => JSON.stringify(v == null ? '' : String(v));
     const reviewsBlock = reviews.length
       ? reviews.map((r) => '    ' + JSON.stringify(typeof r === 'string' ? r : r.src)).join(',\n')
       : '';
 
+    const videos = state.videos || {};
+    const prices = state.prices || {};
+    const links = state.links || {};
+
     return (
       '/**\n' +
-      ' * Admin — YouTube, ছবি, মূল্য, Play Store ও রিভিউ\n' +
+      ' * Admin — prices, links, videos, reviews, ordersApi\n' +
       ' */\n' +
       'window.SITE_CONFIG = {\n' +
+      '  ordersApi: ' + q(state.ordersApi || '') + ',\n' +
       '  links: {\n' +
       '    playStore: ' + q(links.playStore || '') + ',\n' +
+      '    whatsapp: ' + q(links.whatsapp || '') + ',\n' +
+      '    phone: ' + q(links.phone || '') + ',\n' +
       '  },\n' +
       '  videos: {\n' +
-      '    appSetup: ' + q(videos.appSetup) + ', // App Setup Video\n' +
-      '    controller: ' + q(videos.controller) + ', // Controller Video\n' +
-      '    installation: ' + q(videos.installation) + ', // Installation Video\n' +
-      '    appDetails: ' + q(videos.appDetails) + ', // App Details Video\n' +
+      '    appSetup: ' + q(videos.appSetup || '') + ',\n' +
+      '    controller: ' + q(videos.controller || '') + ',\n' +
+      '    installation: ' + q(videos.installation || '') + ',\n' +
+      '    appDetails: ' + q(videos.appDetails || '') + ',\n' +
       '  },\n' +
       '  reviews: [\n' +
       (reviewsBlock ? reviewsBlock + '\n' : '') +
@@ -1092,8 +1294,8 @@
     );
   }
 
-  function downloadTextFile(filename, text) {
-    const blob = new Blob([text], { type: 'application/javascript;charset=utf-8' });
+  function downloadTextFile(filename, textContent) {
+    const blob = new Blob([textContent], { type: 'application/javascript;charset=utf-8' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
@@ -1102,6 +1304,31 @@
     a.click();
     a.remove();
     URL.revokeObjectURL(url);
+  }
+
+  function saveConfigAndDownload(overrides, toastMsg) {
+    const state = readManageStateFromDom();
+    const merged = Object.assign({}, state, overrides || {});
+    if (overrides) {
+      if (overrides.videos) merged.videos = overrides.videos;
+      if (overrides.prices) merged.prices = overrides.prices;
+      if (overrides.links) merged.links = overrides.links;
+      if (overrides.ordersApi != null) merged.ordersApi = overrides.ordersApi;
+    }
+
+    window.SITE_CONFIG = Object.assign({}, window.SITE_CONFIG || {}, {
+      ordersApi: merged.ordersApi,
+      links: merged.links,
+      videos: merged.videos,
+      prices: merged.prices
+    });
+
+    try {
+      localStorage.setItem('ai_controller_videos', JSON.stringify(merged.videos));
+    } catch (e) {}
+
+    downloadTextFile('site-config.js', buildSiteConfigJs(merged));
+    showToast(toastMsg || 'Saved! Upload downloaded site-config.js to GitHub.', 'success');
   }
 
   if (videosForm) {
@@ -1113,15 +1340,191 @@
         installation: (videoInputs.installation && videoInputs.installation.value || '').trim(),
         appDetails: (videoInputs.appDetails && videoInputs.appDetails.value || '').trim()
       };
+      saveConfigAndDownload({ videos }, 'Videos saved — upload site-config.js');
+    });
+  }
 
+  if (pricesForm) {
+    pricesForm.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const prices = {
+        controller: Number((document.getElementById('price-controller') || {}).value) || 0,
+        sensor: Number((document.getElementById('price-sensor') || {}).value) || 0,
+        cablePerFoot: Number((document.getElementById('price-cable') || {}).value) || 0
+      };
+      saveConfigAndDownload({ prices }, 'Prices saved — upload site-config.js');
+    });
+  }
+
+  if (linksForm) {
+    linksForm.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const links = {
+        playStore: ((document.getElementById('link-playStore') || {}).value || '').trim(),
+        whatsapp: ((document.getElementById('link-whatsapp') || {}).value || '').trim(),
+        phone: ((document.getElementById('link-phone') || {}).value || '').trim()
+      };
+      saveConfigAndDownload({ links }, 'Links saved — upload site-config.js');
+    });
+  }
+
+  if (cloudForm) {
+    cloudForm.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const ordersApi = ((document.getElementById('cloud-ordersApi') || {}).value || '').trim();
+      saveConfigAndDownload({ ordersApi }, 'Cloud API saved — upload site-config.js');
+    });
+  }
+
+  const manualForm = document.getElementById('manual-order-form');
+  if (manualForm) {
+    manualForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const name = ((document.getElementById('manual-name') || {}).value || '').trim();
+      const phone = ((document.getElementById('manual-phone') || {}).value || '').trim();
+      const address = ((document.getElementById('manual-address') || {}).value || '').trim();
+      const note = ((document.getElementById('manual-note') || {}).value || '').trim();
+      const feet = Number((document.getElementById('manual-cable') || {}).value) || 0;
+      const ctrl = 4500;
+      const sensor = 1550;
+      const cablePrice = feet * 8;
+      const total = ctrl + sensor + cablePrice;
+      if (!name || !phone || !address) {
+        showToast('নাম, মোবাইল ও ঠিকানা দিন', 'error');
+        return;
+      }
+      const payload = {
+        name, phone, address, note,
+        cableFeet: feet,
+        controllerPrice: ctrl,
+        sensorPrice: sensor,
+        cablePrice,
+        totalPrice: total,
+        packageName: 'AI Controller + Premium Sensor',
+        status: 'pending',
+        confirmedAt: null
+      };
+      let created = null;
       try {
-        localStorage.setItem('ai_controller_videos', JSON.stringify(videos));
-        if (!window.SITE_CONFIG) window.SITE_CONFIG = {};
-        window.SITE_CONFIG.videos = videos;
+        if (window.OrdersAPI) created = await window.OrdersAPI.createOrderRemote(payload);
       } catch (err) {}
+      if (!created) {
+        created = {
+          id: 'ORD-' + Math.floor(100000 + Math.random() * 900000),
+          createdAt: new Date().toISOString(),
+          formattedTime: new Date().toLocaleString('en-US', { timeZone: 'Asia/Dhaka' }),
+          ...payload
+        };
+      }
+      orders = [created, ...orders.filter(o => o.id !== created.id)];
+      try { localStorage.setItem('ai_controller_orders', JSON.stringify(orders)); } catch (e) {}
+      manualForm.reset();
+      setActiveFilter('pending');
+      renderAll();
+      showToast('ম্যানুয়াল অর্ডার যোগ হয়েছে: #' + created.id, 'success');
+    });
+  }
 
-      downloadTextFile('site-config.js', buildSiteConfigJs(videos));
-      showToast('ভিডিও সেভ হয়েছে! ডাউনলোড করা site-config.js GitHub-এ আপলোড করুন।', 'success');
+  function exportOrdersFile() {
+    const list = orders.length ? orders : readLocalOrders();
+    if (!list.length) {
+      showToast('Export করার মতো কোনো অর্ডার নেই', 'error');
+      return;
+    }
+    const blob = new Blob([JSON.stringify(list, null, 2)], { type: 'application/json;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'ai-controller-orders.json';
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(url);
+    showToast(list.length + 'টি অর্ডার Export হয়েছে — পিসিতে Import করুন', 'success');
+  }
+
+  async function copyOrdersJson() {
+    const list = orders.length ? orders : readLocalOrders();
+    if (!list.length) {
+      showToast('Copy করার মতো কোনো অর্ডার নেই', 'error');
+      return;
+    }
+    const text = JSON.stringify(list);
+    try {
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        await navigator.clipboard.writeText(text);
+      } else {
+        const ta = document.createElement('textarea');
+        ta.value = text;
+        document.body.appendChild(ta);
+        ta.select();
+        document.execCommand('copy');
+        ta.remove();
+      }
+      showToast('JSON কপি হয়েছে — পিসিতে Paste Import করুন', 'success');
+    } catch (e) {
+      showToast('কপি ব্যর্থ। Export ব্যবহার করুন।', 'error');
+    }
+  }
+
+  function importOrdersList(list) {
+    if (!Array.isArray(list) || !list.length) {
+      showToast('সঠিক অর্ডার লিস্ট পাওয়া যায়নি', 'error');
+      return;
+    }
+    const cleaned = list.filter(o => o && o.id);
+    if (!cleaned.length) {
+      showToast('ইমপোর্ট ফাইলে অর্ডার নেই', 'error');
+      return;
+    }
+    orders = mergeOrders(cleaned, orders);
+    try {
+      localStorage.setItem('ai_controller_orders', JSON.stringify(orders));
+    } catch (e) {}
+    previousOrderIds = new Set(orders.map(o => o.id));
+    setActiveFilter('all');
+    renderAll();
+    showToast(cleaned.length + 'টি অর্ডার Import হয়েছে', 'success');
+  }
+
+  const btnExportOrders = document.getElementById('btn-export-orders');
+  const btnCopyOrdersJson = document.getElementById('btn-copy-orders-json');
+  const importOrdersFile = document.getElementById('import-orders-file');
+  const btnImportOrdersText = document.getElementById('btn-import-orders-text');
+
+  if (btnExportOrders) btnExportOrders.addEventListener('click', exportOrdersFile);
+  if (btnCopyOrdersJson) btnCopyOrdersJson.addEventListener('click', copyOrdersJson);
+
+  if (importOrdersFile) {
+    importOrdersFile.addEventListener('change', async () => {
+      const file = importOrdersFile.files && importOrdersFile.files[0];
+      if (!file) return;
+      try {
+        const text = await file.text();
+        const parsed = JSON.parse(text);
+        importOrdersList(Array.isArray(parsed) ? parsed : (parsed.orders || []));
+      } catch (e) {
+        showToast('JSON ফাইল পড়া যায়নি', 'error');
+      }
+      importOrdersFile.value = '';
+    });
+  }
+
+  if (btnImportOrdersText) {
+    btnImportOrdersText.addEventListener('click', () => {
+      const ta = document.getElementById('import-orders-text');
+      const raw = (ta && ta.value || '').trim();
+      if (!raw) {
+        showToast('আগে JSON পেস্ট করুন', 'error');
+        return;
+      }
+      try {
+        const parsed = JSON.parse(raw);
+        importOrdersList(Array.isArray(parsed) ? parsed : (parsed.orders || []));
+        if (ta) ta.value = '';
+      } catch (e) {
+        showToast('JSON সঠিক নয়', 'error');
+      }
     });
   }
 

@@ -12,10 +12,11 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
-      href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap"
+      href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;500;600;700&family=Sora:wght@500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap"
       rel="stylesheet"
     />
-    <link rel="stylesheet" href="style.css" />
+    <link rel="stylesheet" href="style.css?v=16" />
+    <link rel="stylesheet" href="pro-ui.css?v=16" />
     <link rel="icon" href="assets/app_icon.png" type="image/png" />
   </head>
   <body>
@@ -47,7 +48,7 @@
           <a href="#features">ফিচার</a>
           <a href="#why">কেন সেরা</a>
           <a href="#compare">তুলনা</a>
-          <a href="#price-calc">মূল্য হিসাব</a>
+          <a href="#price-calc">প্যাকেজ অর্ডার</a>
           <a href="#warranty">ওয়ারেন্টি</a>
           <a href="#faq">FAQ</a>
           <a class="btn btn-whatsapp btn-sm" href="https://wa.me/8801745242000?text=%E0%A6%86%E0%A6%AE%E0%A6%BF%20AI%20Water%20Controller%20%E0%A6%B8%E0%A6%AE%E0%A7%8D%E0%A6%AA%E0%A6%B0%E0%A7%8D%E0%A6%95%E0%A7%87%20%E0%A6%AC%E0%A6%BF%E0%A6%B8%E0%A7%8D%E0%A6%A4%E0%A6%BE%E0%A6%B0%E0%A6%BF%E0%A6%A4%20%E0%A6%9C%E0%A6%BE%E0%A6%A8%E0%A6%A4%E0%A7%87%20%E0%A6%9A%E0%A6%BE%E0%A6%87%E0%A5%A4" target="_blank" rel="noopener noreferrer">WhatsApp</a>
@@ -331,220 +332,220 @@
 
             <!-- 4. Other under app demo: price calc → rest -->
             <div class="home-after">
-              <div class="price-calc" id="price-calc" aria-labelledby="price-calc-title">
-                <h3 id="price-calc-title">প্যাকেজ মূল্য হিসাব</h3>
-                <p class="price-calc-lead">কত ফুট Cable লাগবে লিখুন — মোট অটো হিসাব হবে</p>
-
-                <div class="price-calc-products">
-                  <figure class="price-calc-product">
-                    <img
-                      id="pkg-controller-img"
-                      src="assets/product-controller.png"
-                      alt="AI Water Controller"
-                      width="160"
-                      height="160"
-                      loading="lazy"
-                    />
-                    <figcaption>Controller</figcaption>
-                  </figure>
-                  <span class="price-calc-plus">+</span>
-                  <figure class="price-calc-product">
-                    <img
-                      id="pkg-sensor-img"
-                      src="assets/sensor.png"
-                      alt="Premium Industrial Sensor"
-                      width="160"
-                      height="160"
-                      loading="lazy"
-                    />
-                    <figcaption>Premium Sensor</figcaption>
-                  </figure>
+              <div class="price-calc order-combo" id="price-calc" aria-labelledby="price-calc-title">
+                <div class="order-combo-head">
+                  <p class="order-combo-badge">Cash on Delivery</p>
+                  <h3 id="price-calc-title">প্যাকেজ অর্ডার</h3>
+                  <p class="price-calc-lead">ক্যাবল ফুট সেট করুন, তথ্য দিন, এক ক্লিকে কনফার্ম করুন।</p>
                 </div>
 
-                <div class="price-calc-summary">
-                  <p>
-                    Controller <strong data-price="controller">৳৪,৫০০</strong>
-                    + Premium Sensor <strong data-price="sensor">৳১,৫৫০</strong>
-                    + Cable <strong data-price="cablePerFoot">৳৮</strong>/ফুট
-                  </p>
+                <ol class="order-flow-steps" aria-label="অর্ডার ধাপ">
+                  <li class="is-current"><span>১</span> প্যাকেজ</li>
+                  <li><span>২</span> তথ্য</li>
+                  <li><span>৩</span> কনফার্ম</li>
+                </ol>
+
+                <div class="order-step order-step--package">
+                  <div class="order-step-label"><span>১</span> প্যাকেজ ও ক্যাবল</div>
+
+                  <div class="price-calc-products">
+                    <figure class="price-calc-product">
+                      <img
+                        id="pkg-controller-img"
+                        src="assets/product-controller.png"
+                        alt="AI Water Controller"
+                        width="160"
+                        height="160"
+                        loading="lazy"
+                      />
+                      <figcaption>Controller</figcaption>
+                    </figure>
+                    <span class="price-calc-plus">+</span>
+                    <figure class="price-calc-product">
+                      <img
+                        id="pkg-sensor-img"
+                        src="assets/sensor.png"
+                        alt="Premium Industrial Sensor"
+                        width="160"
+                        height="160"
+                        loading="lazy"
+                      />
+                      <figcaption>Premium Sensor</figcaption>
+                    </figure>
+                  </div>
+
+                  <label class="price-calc-feet">
+                    <span>Cable কত ফুট লাগবে?</span>
+                    <div class="price-calc-feet-row">
+                      <input
+                        type="number"
+                        id="calc-cable-feet"
+                        min="0"
+                        max="500"
+                        step="1"
+                        value="30"
+                        inputmode="numeric"
+                      />
+                      <span class="price-calc-unit">ফুট</span>
+                    </div>
+                  </label>
+
+                  <ul class="price-calc-breakdown">
+                    <li>
+                      <span>Controller</span>
+                      <strong id="calc-line-controller">৳৪,৫০০</strong>
+                    </li>
+                    <li>
+                      <span>Premium Sensor</span>
+                      <strong id="calc-line-sensor">৳১,৫৫০</strong>
+                    </li>
+                    <li>
+                      <span>Cable (<span id="calc-feet-label">30</span> × <span data-price="cablePerFoot">৳৮</span>)</span>
+                      <strong id="calc-line-cable">৳২৪০</strong>
+                    </li>
+                    <li class="price-calc-total">
+                      <span>প্যাকেজ মোট</span>
+                      <strong id="calc-total">৳৬,২৯০</strong>
+                    </li>
+                  </ul>
+
+                  <p class="price-calc-note">Cable ফ্রি নয় — ৳৮/ফুট · মোবাইল অ্যাপ ফ্রি</p>
+
+                  <div id="pkg-controller-video-wrap" class="video-embed video-embed--compact" hidden></div>
+                  <a id="pkg-controller-video" class="video-link-btn" href="#" hidden>▶ Controller ভিডিও</a>
                 </div>
 
-                <label class="price-calc-feet">
-                  <span>Cable কত ফুট লাগবে?</span>
-                  <div class="price-calc-feet-row">
-                    <input
-                      type="number"
-                      id="calc-cable-feet"
-                      min="0"
-                      max="500"
-                      step="1"
-                      value="30"
-                      inputmode="numeric"
-                    />
-                    <span class="price-calc-unit">ফুট</span>
-                  </div>
-                </label>
+                <div class="order-step order-step--details" id="order-form-container">
+                  <div class="order-step-label"><span>২</span> ডেলিভারি তথ্য দিন</div>
+                  <p class="order-step-hint">নিচের তথ্য দিয়ে একবারেই অর্ডার কনফার্ম হবে</p>
 
-                <ul class="price-calc-breakdown">
-                  <li>
-                    <span>Controller</span>
-                    <strong id="calc-line-controller">৳৪,৫০০</strong>
-                  </li>
-                  <li>
-                    <span>Premium Sensor</span>
-                    <strong id="calc-line-sensor">৳১,৫৫০</strong>
-                  </li>
-                  <li>
-                    <span>Cable (<span id="calc-feet-label">30</span> × <span data-price="cablePerFoot">৳৮</span>)</span>
-                    <strong id="calc-line-cable">৳২৪০</strong>
-                  </li>
-                  <li class="price-calc-total">
-                    <span>মোট মূল্য</span>
-                    <strong id="calc-total">৳৬,২৯০</strong>
-                  </li>
-                </ul>
-
-                <p class="price-calc-note">প্যাকেজে কোনো Cable ফ্রি নেই — ৳৮/ফুট · ফ্রি মোবাইল অ্যাপ অন্তর্ভুক্ত</p>
-
-                <div id="pkg-controller-video-wrap" class="video-embed video-embed--compact" hidden></div>
-                <a id="pkg-controller-video" class="video-link-btn" href="#" hidden>▶ Controller ভিডিও</a>
-
-                <!-- Customer Order Form -->
-                <div class="order-form-box" id="order-form-container">
-                  <div class="order-form-header">
-                    <h4>সরাসরি ওয়েবসাইটে অর্ডার করুন</h4>
-                    <p>ক্যাশ অন ডেলিভারি — পণ্য হাতে পেয়ে টাকা পরিশোধ করুন</p>
-                  </div>
-
-                  <form id="customer-order-form">
-                    <div class="order-input-group">
-                      <label for="order-customer-name">আপনার পূর্ণ নাম <span style="color:#ef4444">*</span></label>
-                      <input
-                        type="text"
-                        id="order-customer-name"
-                        placeholder="উদাঃ মোঃ আরিফুল ইসলাম"
-                        required
-                        autocomplete="name"
-                      />
-                    </div>
-
-                    <div class="order-input-group">
-                      <label for="order-customer-phone">মোবাইল নম্বর <span style="color:#ef4444">*</span></label>
-                      <input
-                        type="tel"
-                        id="order-customer-phone"
-                        placeholder="উদাঃ 017xxxxxxxx"
-                        required
-                        autocomplete="tel"
-                      />
-                    </div>
-
-                    <div class="order-input-group">
-                      <label for="order-customer-address">সম্পূর্ণ ডেলিভারি ঠিকানা <span style="color:#ef4444">*</span></label>
-                      <textarea
-                        id="order-customer-address"
-                        rows="2"
-                        placeholder="বাড়ি/হোল্ডিং নং, রোড, থানা/উপজেলা, জেলা (উদাঃ বাড়ি ১২, রোড ৫, মিরপুর ১০, ঢাকা)"
-                        required
-                        autocomplete="street-address"
-                      ></textarea>
-                    </div>
-
-                    <div class="order-input-group">
-                      <label for="order-customer-note">বিশেষ নির্দেশনা (ঐচ্ছিক)</label>
-                      <input
-                        type="text"
-                        id="order-customer-note"
-                        placeholder="যেমন: ডেলিভারির আগে কল করবেন"
-                      />
-                    </div>
-
-                    <div class="order-total-preview">
-                      <span>সর্বমোট প্রদেয় টাকা:</span>
-                      <strong id="form-order-total">৳৬,২৯০</strong>
-                    </div>
-
-                    <button type="submit" class="btn-submit-order" id="btn-submit-order">
-                      <span>✓ অর্ডার কনফার্ম করুন (ক্যাশ অন ডেলিভারি)</span>
-                    </button>
-
-                    <div class="order-badges-guarantee">
-                      <span>✓ পণ্য হাতে পেয়ে মূল্য পরিশোধ করবেন</span>
-                      <span>✓ অর্ডার করার পর আমাদের প্রতিনিধি আপনাকে কল করে নিশ্চিত করবে</span>
-                    </div>
-                  </form>
-
-                  <!-- Success Message Card (Hidden by default) -->
-                  <div class="order-success-card" id="order-success-card" hidden>
-                    <div class="order-success-icon">✓</div>
-                    <h4>অর্ডার সফলভাবে গ্রহণ করা হয়েছে!</h4>
-                    <p>ধন্যবাদ, <strong id="success-name"></strong>! আপনার অর্ডারটি আমরা পেয়েছি।</p>
-
-                    <div class="success-info-table">
-                      <div>
-                        <span>অর্ডার নম্বর:</span>
-                        <strong id="success-id" style="font-family: var(--font-en); color: #0284c7;"></strong>
+                  <div class="order-form-box" id="order-form-box">
+                    <form id="customer-order-form">
+                      <div class="order-input-group">
+                        <label for="order-customer-name">পূর্ণ নাম <span style="color:#ef4444">*</span></label>
+                        <input
+                          type="text"
+                          id="order-customer-name"
+                          placeholder="উদাঃ মোঃ আরিফুল ইসলাম"
+                          required
+                          autocomplete="name"
+                        />
                       </div>
-                      <div>
-                        <span>মোবাইল:</span>
-                        <strong id="success-phone"></strong>
-                      </div>
-                      <div>
-                        <span>ঠিকানা:</span>
-                        <span id="success-address"></span>
-                      </div>
-                      <div>
-                        <span>ক্যাবল:</span>
-                        <span id="success-cable"></span>
-                      </div>
-                      <div style="border-top: 1px dashed #cbd5e1; padding-top: 0.35rem; margin-top: 0.2rem;">
-                        <strong>মোট বিল:</strong>
-                        <strong id="success-total" style="color: #e11d48; font-family: var(--font-en); font-size: 1.05rem;"></strong>
-                      </div>
-                    </div>
 
-                    <p style="font-size: 0.82rem; color: #475569; margin-bottom: 0.85rem;">
-                      📞 আমাদের টিম শীঘ্রই আপনার নম্বরে কল করে ডেলিভারি কনফার্ম করবে।
-                    </p>
+                      <div class="order-input-group">
+                        <label for="order-customer-phone">মোবাইল নম্বর <span style="color:#ef4444">*</span></label>
+                        <input
+                          type="tel"
+                          id="order-customer-phone"
+                          placeholder="উদাঃ 017xxxxxxxx"
+                          required
+                          autocomplete="tel"
+                        />
+                      </div>
 
-                    <div class="success-actions">
-                      <a
-                        class="btn btn-whatsapp"
-                        id="success-whatsapp-btn"
-                        href="#"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        style="justify-content: center;"
-                      >
-                        💬 WhatsApp-এ অর্ডার ট্র্যাক করুন
-                      </a>
-                      <button type="button" class="btn-new-order" id="btn-new-order">
-                        আরেকটি নতুন অর্ডার করুন
+                      <div class="order-input-group">
+                        <label for="order-customer-address">ডেলিভারি ঠিকানা <span style="color:#ef4444">*</span></label>
+                        <textarea
+                          id="order-customer-address"
+                          rows="2"
+                          placeholder="বাড়ি/হোল্ডিং, রোড, থানা, জেলা"
+                          required
+                          autocomplete="street-address"
+                        ></textarea>
+                      </div>
+
+                      <div class="order-input-group">
+                        <label for="order-customer-note">নোট (ঐচ্ছিক)</label>
+                        <input
+                          type="text"
+                          id="order-customer-note"
+                          placeholder="যেমন: ডেলিভারির আগে কল করবেন"
+                        />
+                      </div>
+
+                      <div class="order-total-preview">
+                        <span>৩ · সর্বমোট (COD)</span>
+                        <strong id="form-order-total">৳৬,২৯০</strong>
+                      </div>
+
+                      <button type="submit" class="btn-submit-order" id="btn-submit-order">
+                        <span>✓ প্যাকেজ অর্ডার কনফার্ম করুন</span>
                       </button>
+
+                      <div class="order-badges-guarantee">
+                        <span>✓ পণ্য হাতে পেয়ে টাকা দিবেন</span>
+                        <span>✓ অর্ডারের পর আমরা কল করে নিশ্চিত করব</span>
+                      </div>
+                    </form>
+
+                    <div class="order-success-card" id="order-success-card" hidden>
+                      <div class="order-success-icon">✓</div>
+                      <h4>অর্ডার গ্রহণ করা হয়েছে!</h4>
+                      <p>ধন্যবাদ, <strong id="success-name"></strong>! আপনার প্যাকেজ অর্ডার পেয়েছি।</p>
+
+                      <div class="success-info-table">
+                        <div>
+                          <span>অর্ডার নম্বর:</span>
+                          <strong id="success-id" style="font-family: var(--font-en); color: #0284c7;"></strong>
+                        </div>
+                        <div>
+                          <span>মোবাইল:</span>
+                          <strong id="success-phone"></strong>
+                        </div>
+                        <div>
+                          <span>ঠিকানা:</span>
+                          <span id="success-address"></span>
+                        </div>
+                        <div>
+                          <span>ক্যাবল:</span>
+                          <span id="success-cable"></span>
+                        </div>
+                        <div style="border-top: 1px dashed #cbd5e1; padding-top: 0.35rem; margin-top: 0.2rem;">
+                          <strong>মোট বিল:</strong>
+                          <strong id="success-total" style="color: #e11d48; font-family: var(--font-en); font-size: 1.05rem;"></strong>
+                        </div>
+                      </div>
+
+                      <p id="success-admin-hint" style="font-size: 0.82rem; color: #475569; margin-bottom: 0.85rem;">
+                        📞 আমাদের টিম শীঘ্রই আপনার নম্বরে কল করে ডেলিভারি কনফার্ম করবে।
+                      </p>
+
+                      <div class="success-actions">
+                        <a
+                          class="btn btn-whatsapp"
+                          id="success-whatsapp-btn"
+                          href="#"
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          style="justify-content: center;"
+                        >
+                          💬 WhatsApp-এ অর্ডার ট্র্যাক করুন
+                        </a>
+                        <button type="button" class="btn-new-order" id="btn-new-order">
+                          আরেকটি অর্ডার করুন
+                        </button>
+                      </div>
                     </div>
                   </div>
 
-                  <div class="order-divider-alt">
-                    <span>অথবা</span>
-                  </div>
-
-                  <a
-                    class="btn btn-whatsapp price-calc-order"
-                    id="calc-order-btn"
-                    href="https://wa.me/8801745242000"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    >💬 সরাসরি WhatsApp-এ অর্ডার করুন</a
-                  >
+                  <p class="order-wa-alt">
+                    চাইলে
+                    <a
+                      id="calc-whatsapp-btn"
+                      href="https://wa.me/8801745242000"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      >WhatsApp-এও অর্ডার করতে পারেন</a
+                    >
+                  </p>
                 </div>
               </div>
 
               <div class="cta-row home-cta">
                 <a
                   class="btn btn-primary"
-                  href="https://wa.me/8801745242000"
-                  target="_blank"
-                  rel="noopener noreferrer"
+                  href="#price-calc"
+                  data-go-order-form
                   >এখনই অর্ডার</a
                 >
                 <a class="btn btn-whatsapp" href="https://wa.me/8801745242000" target="_blank" rel="noopener noreferrer"
@@ -566,7 +567,7 @@
             </div>
 
           <nav class="home-quick-nav" aria-label="দ্রুত নেভিগেশন">
-            <a href="#price-calc">মূল্য হিসাব</a>
+            <a href="#price-calc">প্যাকেজ অর্ডার</a>
             <a href="#overview">অরিজিনাল ছবি</a>
             <a href="#videos">প্রোডাক্ট ভিডিও</a>
             <a href="#features">ফিচার</a>
@@ -934,9 +935,8 @@
           <div class="cta-row center">
             <a
               class="btn btn-primary"
-              href="https://wa.me/8801745242000?text=%E0%A6%86%E0%A6%AE%E0%A6%BF%20AI%20Water%20Controller%20%E0%A6%B8%E0%A6%AE%E0%A7%8D%E0%A6%AA%E0%A6%B0%E0%A7%8D%E0%A6%95%E0%A7%87%20%E0%A6%AC%E0%A6%BF%E0%A6%B8%E0%A7%8D%E0%A6%A4%E0%A6%BE%E0%A6%B0%E0%A6%BF%E0%A6%A4%20%E0%A6%9C%E0%A6%BE%E0%A6%A8%E0%A6%A4%E0%A7%87%20%E0%A6%9A%E0%A6%BE%E0%A6%87%E0%A5%A4"
-              target="_blank"
-              rel="noopener noreferrer"
+              href="#price-calc"
+              data-go-order-form
               >এখনই অর্ডার করুন</a
             >
             <a
@@ -982,15 +982,15 @@
       <a
         class="btn btn-primary"
         id="sticky-order-btn"
-        href="https://wa.me/8801745242000?text=%E0%A6%86%E0%A6%AE%E0%A6%BF%20AI%20Water%20Controller%20%E0%A6%B8%E0%A6%AE%E0%A7%8D%E0%A6%AA%E0%A6%B0%E0%A7%8D%E0%A6%95%E0%A7%87%20%E0%A6%AC%E0%A6%BF%E0%A6%B8%E0%A7%8D%E0%A6%A4%E0%A6%BE%E0%A6%B0%E0%A6%BF%E0%A6%A4%20%E0%A6%9C%E0%A6%BE%E0%A6%A8%E0%A6%A4%E0%A7%87%20%E0%A6%9A%E0%A6%BE%E0%A6%87%E0%A5%A4"
-        target="_blank"
-        rel="noopener noreferrer"
+        href="#price-calc"
+        data-go-order-form
         >অর্ডার · ৳৬,০৫০</a
       >
     </div>
 
-    <script src="site-config.js"></script>
-    <script src="site-content.js"></script>
+    <script src="site-config.js?v=16"></script>
+    <script src="orders-api.js?v=16"></script>
+    <script src="site-content.js?v=16"></script>
     <script src="script.js" defer></script>
   </body>
 </html>

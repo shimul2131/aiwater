@@ -1,0 +1,363 @@
+/* Website CMS Admin — aicontroller.store
+   Feels like a real website control panel */
+
+.admin-shell {
+  min-height: 100vh;
+  background: #f1f4f8;
+}
+
+.admin-sidebar {
+  width: 250px !important;
+  background: #0b1220 !important;
+}
+
+.sidebar-brand strong {
+  font-size: 0.88rem !important;
+  letter-spacing: -0.02em;
+}
+
+.sidebar-brand span {
+  letter-spacing: 0.08em !important;
+}
+
+.sidebar-site-link,
+.sidebar-logout {
+  display: block;
+  width: 100%;
+  text-align: left;
+  padding: 0.55rem 0.35rem;
+  color: #94a3b8;
+  font-family: "Sora", "Hind Siliguri", sans-serif;
+  font-size: 0.84rem;
+  font-weight: 600;
+  background: none;
+  border: none;
+  cursor: pointer;
+}
+
+.sidebar-site-link:hover,
+.sidebar-logout:hover {
+  color: #fff;
+}
+
+.sidebar-logout {
+  color: #fb7185;
+}
+
+.admin-topbar {
+  min-height: 68px;
+  padding: 0.75rem 1.35rem !important;
+}
+
+.topbar-crumb {
+  margin: 0;
+  font-family: "Sora", sans-serif;
+  font-size: 0.68rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #94a3b8;
+}
+
+.topbar-title {
+  margin: 0.05rem 0 0 !important;
+}
+
+.btn-topbar-site {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.45rem 0.8rem;
+  border-radius: 8px;
+  border: 1px solid #dbe3ec;
+  background: #fff;
+  color: #0b1220;
+  font-family: "Sora", sans-serif;
+  font-size: 0.78rem;
+  font-weight: 700;
+}
+
+.btn-topbar-site:hover {
+  background: #f8fafc;
+}
+
+.topbar-user {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.25rem 0.55rem 0.25rem 0.25rem;
+  border-radius: 999px;
+  background: #fff;
+  border: 1px solid #dbe3ec;
+}
+
+.topbar-user-avatar {
+  width: 1.7rem;
+  height: 1.7rem;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: #0f766e;
+  color: #fff;
+  font-family: "Sora", sans-serif;
+  font-size: 0.72rem;
+  font-weight: 700;
+}
+
+.topbar-user-name {
+  font-family: "Sora", sans-serif;
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: #334155;
+  padding-right: 0.2rem;
+}
+
+.admin-main {
+  max-width: 1180px;
+}
+
+/* Dashboard */
+.cms-hero {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  align-items: center;
+  flex-wrap: wrap;
+  margin-bottom: 1rem;
+  padding: 1.25rem 1.3rem;
+  border-radius: 16px;
+  background:
+    linear-gradient(135deg, rgba(15, 118, 110, 0.08), transparent 45%),
+    #fff;
+  border: 1px solid #e2e8f0;
+}
+
+.cms-hero h2 {
+  margin: 0 0 0.3rem;
+  font-family: "Sora", "Hind Siliguri", sans-serif;
+  font-size: 1.45rem;
+  letter-spacing: -0.03em;
+  color: #0b1220;
+}
+
+.cms-hero p {
+  margin: 0;
+  max-width: 42rem;
+  color: #64748b;
+  font-size: 0.92rem;
+  line-height: 1.5;
+}
+
+.cms-hero-actions {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.btn-cms-primary,
+.btn-cms-ghost,
+.btn-cms-text {
+  font-family: "Sora", sans-serif;
+  font-weight: 700;
+  border-radius: 9px;
+  cursor: pointer;
+  border: none;
+}
+
+.btn-cms-primary {
+  padding: 0.7rem 1rem;
+  background: #0b1220;
+  color: #fff;
+  font-size: 0.86rem;
+}
+
+.btn-cms-primary:hover {
+  background: #1e293b;
+}
+
+.btn-cms-ghost {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.7rem 1rem;
+  background: #fff;
+  border: 1px solid #dbe3ec;
+  color: #0b1220;
+  font-size: 0.86rem;
+  text-decoration: none;
+}
+
+.btn-cms-text {
+  background: none;
+  color: #0f766e;
+  font-size: 0.8rem;
+  padding: 0.2rem;
+}
+
+.cms-stats {
+  margin-bottom: 1rem;
+}
+
+.cms-grid-2 {
+  display: grid;
+  grid-template-columns: 1.05fr 0.95fr;
+  gap: 0.9rem;
+}
+
+.cms-card {
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  border-radius: 16px;
+  padding: 1rem 1.05rem 1.1rem;
+}
+
+.cms-card-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-bottom: 0.85rem;
+}
+
+.cms-card-head h3 {
+  margin: 0;
+  font-family: "Sora", sans-serif;
+  font-size: 0.95rem;
+  letter-spacing: -0.02em;
+  color: #0b1220;
+}
+
+.cms-quick-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.55rem;
+}
+
+.cms-quick {
+  text-align: left;
+  padding: 0.85rem 0.9rem;
+  border-radius: 12px;
+  border: 1px solid #e2e8f0;
+  background: #f8fafc;
+  cursor: pointer;
+  transition: border-color 0.15s ease, background 0.15s ease, transform 0.15s ease;
+}
+
+.cms-quick:hover {
+  background: #fff;
+  border-color: #99f6e4;
+  transform: translateY(-1px);
+}
+
+.cms-quick strong {
+  display: block;
+  font-family: "Sora", sans-serif;
+  font-size: 0.88rem;
+  color: #0b1220;
+  margin-bottom: 0.15rem;
+}
+
+.cms-quick span {
+  font-size: 0.78rem;
+  color: #64748b;
+}
+
+.cms-recent-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+}
+
+.cms-recent-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  width: 100%;
+  padding: 0.75rem 0.8rem;
+  border-radius: 10px;
+  border: 1px solid #eef2f6;
+  background: #fff;
+  cursor: pointer;
+  text-align: left;
+}
+
+.cms-recent-item:hover {
+  border-color: #cbd5e1;
+  background: #f8fafc;
+}
+
+.cms-recent-item strong {
+  display: block;
+  font-family: "Sora", sans-serif;
+  font-size: 0.86rem;
+  color: #0b1220;
+}
+
+.cms-recent-item span {
+  display: block;
+  margin-top: 0.12rem;
+  font-size: 0.78rem;
+  color: #64748b;
+}
+
+.cms-status {
+  font-family: "Sora", sans-serif;
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  font-style: normal;
+  padding: 0.25rem 0.45rem;
+  border-radius: 6px;
+  background: #f1f5f9;
+  color: #475569;
+}
+
+.cms-status-pending { background: #fff7ed; color: #c2410c; }
+.cms-status-confirmed { background: #ecfdf5; color: #047857; }
+.cms-status-delivered { background: #eff6ff; color: #1d4ed8; }
+.cms-status-cancelled { background: #fff1f2; color: #be123c; }
+
+.cms-empty {
+  margin: 0;
+  padding: 1.2rem 0.4rem;
+  text-align: center;
+  color: #94a3b8;
+  font-size: 0.88rem;
+}
+
+.admin-panel[data-panel="orders"] .orders-api-banner,
+.admin-panel[data-panel="orders"] .order-sync-box,
+.admin-panel[data-panel="orders"] .manual-order-section {
+  margin-bottom: 0.85rem;
+}
+
+.admin-footer {
+  border-top: 1px solid #e2e8f0;
+  background: transparent;
+  color: #94a3b8;
+  font-family: "Sora", sans-serif;
+  font-size: 0.75rem;
+}
+
+.manage-card {
+  max-width: 760px;
+}
+
+@media (max-width: 960px) {
+  .cms-grid-2 {
+    grid-template-columns: 1fr;
+  }
+  .topbar-user-name {
+    display: none;
+  }
+}
+
+@media (max-width: 640px) {
+  .cms-quick-grid {
+    grid-template-columns: 1fr;
+  }
+  .cms-hero {
+    padding: 1rem;
+  }
+}
