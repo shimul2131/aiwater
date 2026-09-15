@@ -575,6 +575,36 @@ ol {
 .price-calc-order {
   width: 100%;
   justify-content: center;
+  margin-top: 0.85rem;
+}
+
+.req-mark {
+  color: #e11d48;
+  font-style: normal;
+  font-weight: 700;
+}
+
+.price-calc-feet small {
+  font-weight: 500;
+  color: #b45309;
+  margin-left: 0.15rem;
+}
+
+.cable-must-hint {
+  display: none;
+  margin: 0.45rem 0 0;
+  font-size: 0.8rem;
+  color: #b91c1c;
+  font-weight: 600;
+}
+
+.cable-must-hint.is-visible {
+  display: block;
+}
+
+#calc-cable-feet.is-invalid {
+  border-color: #ef4444 !important;
+  box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.18);
 }
 
 /* Customer Order Form inside price-calc */
@@ -4318,14 +4348,12 @@ ol {
   font-size: 0.78rem;
   font-weight: 800;
 }
-.order-flow-steps li.is-current,
-.order-flow-steps li:first-child {
+.order-flow-steps li.is-current {
   background: #fff;
   color: #0e7490;
   box-shadow: 0 4px 12px rgba(8, 145, 178, 0.12);
 }
-.order-flow-steps li.is-current span,
-.order-flow-steps li:first-child span {
+.order-flow-steps li.is-current span {
   background: linear-gradient(135deg, #0e7490, #0891b2);
   color: #fff;
 }

@@ -1652,6 +1652,47 @@ body.sidebar-open .admin-sidebar {
   background: #eff6ff;
   border: 1px solid #bfdbfe;
 }
+
+.orders-manage-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.85rem;
+  margin-bottom: 1rem;
+  padding: 1rem 1.05rem;
+  border-radius: 14px;
+  background: #fff;
+  border: 1px solid #e2e8f0;
+}
+.orders-manage-head h2 {
+  margin: 0 0 0.2rem;
+  font-size: 1.25rem;
+  color: #0f172a;
+}
+.orders-manage-head p {
+  margin: 0;
+  font-size: 0.88rem;
+  color: #64748b;
+}
+.orders-manage-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+.edit-order-form {
+  margin: 0.5rem 1rem 1.1rem;
+}
+.edit-order-total {
+  grid-column: 1 / -1;
+  margin: 0;
+  font-size: 0.95rem;
+  color: #334155;
+}
+.edit-order-total strong {
+  color: #e11d48;
+  font-family: var(--font-en);
+}
 .order-sync-head strong { display: block; color: #1e3a8a; margin-bottom: 0.2rem; }
 .order-sync-head p { margin: 0 0 0.75rem; color: #1e40af; font-size: 0.86rem; }
 .order-sync-actions {

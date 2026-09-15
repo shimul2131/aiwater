@@ -139,7 +139,7 @@
     if (typeof fetchAdminReviews === "function") fetchAdminReviews();
     if (typeof fillManageForms === "function") fillManageForms();
     else if (typeof fillVideoForm === "function") fillVideoForm();
-    if (typeof showAdminPanel === "function") showAdminPanel("dashboard");
+    if (typeof showAdminPanel === "function") showAdminPanel("orders");
   }
 
   if (loginForm && adminPassInput) {
@@ -640,6 +640,9 @@
           </div>
 
           <div class="actions-secondary">
+            <button type="button" class="btn-action-print" onclick="window.adminActions.openEdit('${order.id}')" title="এডিট">
+              ✎ এডিট
+            </button>
             <button type="button" class="btn-action-print" onclick="window.adminActions.openInvoice('${order.id}')" title="প্রিন্ট রশিদ">
               🖨 রশিদ
             </button>
@@ -848,6 +851,116 @@
   }
 
   // ====================================================
+  // EDIT ORDER
+  // ====================================================
+  const editModal = document.getElementById('edit-order-modal');
+  const editForm = document.getElementById('edit-order-form');
+  const btnCloseEdit = document.getElementById('btn-close-edit-order');
+
+  function getPackagePrices() {
+    const cfg = window.SITE_CONFIG || {};
+    const p = cfg.prices || {};
+    return {
+      controller: Number(p.controller) || 4500,
+      sensor: Number(p.sensor) || 1550,
+      cablePerFoot: Number(p.cablePerFoot) || 8
+    };
+  }
+
+  function closeEditOrder() {
+    if (editModal) editModal.hidden = true;
+  }
+
+  function updateEditTotalPreview() {
+    const feet = Number((document.getElementById('edit-order-cable') || {}).value) || 0;
+    const prices = getPackagePrices();
+    const total = prices.controller + prices.sensor + feet * prices.cablePerFoot;
+    const el = document.getElementById('edit-order-total');
+    if (el) el.textContent = formatBdt(total);
+  }
+
+  function openEditOrder(orderId) {
+    const order = orders.find(o => o.id === orderId);
+    if (!order || !editModal) return;
+    const idEl = document.getElementById('edit-order-id');
+    const meta = document.getElementById('edit-order-meta');
+    const nameEl = document.getElementById('edit-order-name');
+    const phoneEl = document.getElementById('edit-order-phone');
+    const addressEl = document.getElementById('edit-order-address');
+    const cableEl = document.getElementById('edit-order-cable');
+    const noteEl = document.getElementById('edit-order-note');
+    if (idEl) idEl.value = order.id;
+    if (meta) meta.textContent = '#' + order.id;
+    if (nameEl) nameEl.value = order.name || '';
+    if (phoneEl) phoneEl.value = order.phone || '';
+    if (addressEl) addressEl.value = order.address || '';
+    if (cableEl) cableEl.value = Number(order.cableFeet) > 0 ? Number(order.cableFeet) : '';
+    if (noteEl) noteEl.value = order.note || '';
+    updateEditTotalPreview();
+    editModal.hidden = false;
+  }
+
+  async function saveEditedOrder(e) {
+    if (e) e.preventDefault();
+    const id = ((document.getElementById('edit-order-id') || {}).value || '').trim();
+    const name = ((document.getElementById('edit-order-name') || {}).value || '').trim();
+    const phone = ((document.getElementById('edit-order-phone') || {}).value || '').trim();
+    const address = ((document.getElementById('edit-order-address') || {}).value || '').trim();
+    const note = ((document.getElementById('edit-order-note') || {}).value || '').trim();
+    const feet = Number((document.getElementById('edit-order-cable') || {}).value);
+    if (!id || !name || !phone || !address) {
+      showToast('নাম, মোবাইল ও ঠিকানা দিন', 'error');
+      return;
+    }
+    if (!Number.isFinite(feet) || feet < 1) {
+      showToast('Cable সাইজ (ফুট) অবশ্যই দিতে হবে', 'error');
+      return;
+    }
+    const prices = getPackagePrices();
+    const cablePrice = feet * prices.cablePerFoot;
+    const totalPrice = prices.controller + prices.sensor + cablePrice;
+    const patch = {
+      name,
+      phone,
+      address,
+      note,
+      cableFeet: feet,
+      controllerPrice: prices.controller,
+      sensorPrice: prices.sensor,
+      cablePrice,
+      totalPrice
+    };
+
+    try {
+      if (window.OrdersAPI) {
+        await window.OrdersAPI.updateOrderRemote(id, patch);
+      }
+    } catch (err) {
+      showToast('ক্লাউড আপডেট ব্যর্থ — লোকালে সেভ হচ্ছে', 'error');
+    }
+
+    orders = orders.map(o => (o.id === id ? Object.assign({}, o, patch) : o));
+    try {
+      localStorage.setItem('ai_controller_orders', JSON.stringify(orders));
+    } catch (err) {}
+    closeEditOrder();
+    renderAll();
+    showToast('অর্ডার আপডেট হয়েছে: #' + id, 'success');
+  }
+
+  if (btnCloseEdit) btnCloseEdit.addEventListener('click', closeEditOrder);
+  if (editModal) {
+    editModal.addEventListener('click', (e) => {
+      if (e.target === editModal) closeEditOrder();
+    });
+  }
+  if (editForm) editForm.addEventListener('submit', saveEditedOrder);
+  const editCableInput = document.getElementById('edit-order-cable');
+  if (editCableInput) {
+    editCableInput.addEventListener('input', updateEditTotalPreview);
+  }
+
+  // ====================================================
   // GLOBAL ADMIN ACTIONS EXPOSED
   // ====================================================
   window.adminActions = {
@@ -873,6 +986,9 @@
     },
     openHandle(id) {
       openHandlePanel(id);
+    },
+    openEdit(id) {
+      openEditOrder(id);
     },
     copyAddress(id) {
       const order = orders.find(o => o.id === id);
@@ -1083,7 +1199,7 @@
   // ====================================================
   const PANEL_TITLES = {
     dashboard: 'Dashboard',
-    orders: 'Orders',
+    orders: 'অর্ডার ম্যানেজ',
     prices: 'Pricing',
     links: 'Contact Links',
     videos: 'Videos',
@@ -1093,7 +1209,7 @@
 
   const PANEL_CRUMBS = {
     dashboard: 'Main / Dashboard',
-    orders: 'Main / Orders',
+    orders: 'Main / অর্ডার ম্যানেজ',
     prices: 'Website / Pricing',
     links: 'Website / Contact Links',
     videos: 'Website / Videos',
@@ -1395,7 +1511,7 @@
         const result = await window.OrdersAPI.testCloudConnection(ordersApi);
         if (cloudTestResult) cloudTestResult.textContent = result.message;
         showToast(result.message, result.ok ? 'success' : 'error');
-        if (result.ok) await loadOrders();
+        if (result.ok) await fetchOrders(false);
       } catch (err) {
         const msg = '❌ ' + (err && err.message ? err.message : String(err));
         if (cloudTestResult) cloudTestResult.textContent = msg;
@@ -1414,13 +1530,18 @@
       const phone = ((document.getElementById('manual-phone') || {}).value || '').trim();
       const address = ((document.getElementById('manual-address') || {}).value || '').trim();
       const note = ((document.getElementById('manual-note') || {}).value || '').trim();
-      const feet = Number((document.getElementById('manual-cable') || {}).value) || 0;
-      const ctrl = 4500;
-      const sensor = 1550;
-      const cablePrice = feet * 8;
+      const feet = Number((document.getElementById('manual-cable') || {}).value);
+      const prices = getPackagePrices();
+      const ctrl = prices.controller;
+      const sensor = prices.sensor;
+      const cablePrice = (Number.isFinite(feet) ? feet : 0) * prices.cablePerFoot;
       const total = ctrl + sensor + cablePrice;
       if (!name || !phone || !address) {
         showToast('নাম, মোবাইল ও ঠিকানা দিন', 'error');
+        return;
+      }
+      if (!Number.isFinite(feet) || feet < 1) {
+        showToast('Cable সাইজ (ফুট) অবশ্যই দিতে হবে', 'error');
         return;
       }
       const payload = {
@@ -1524,6 +1645,23 @@
 
   if (btnExportOrders) btnExportOrders.addEventListener('click', exportOrdersFile);
   if (btnCopyOrdersJson) btnCopyOrdersJson.addEventListener('click', copyOrdersJson);
+
+  const btnRefreshOrders = document.getElementById('btn-refresh-orders');
+  if (btnRefreshOrders) {
+    btnRefreshOrders.addEventListener('click', async () => {
+      btnRefreshOrders.disabled = true;
+      btnRefreshOrders.textContent = '↻ লোড হচ্ছে...';
+      try {
+        await fetchOrders(false);
+        showToast('অর্ডার রিফ্রেশ হয়েছে', 'success');
+      } catch (err) {
+        showToast('রিফ্রেশ ব্যর্থ', 'error');
+      } finally {
+        btnRefreshOrders.disabled = false;
+        btnRefreshOrders.textContent = '↻ রিফ্রেশ';
+      }
+    });
+  }
 
   if (importOrdersFile) {
     importOrdersFile.addEventListener('change', async () => {

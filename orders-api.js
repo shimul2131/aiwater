@@ -120,12 +120,16 @@
     throw new Error("api create bad payload");
   }
 
-  async function updateOrderRemote(orderId, nextStatus) {
+  async function updateOrderRemote(orderId, nextStatusOrPatch) {
     const cloud = isCloudOrdersApi();
     const url = getOrdersApiUrl();
+    const patch =
+      typeof nextStatusOrPatch === "string"
+        ? { status: nextStatusOrPatch }
+        : nextStatusOrPatch || {};
 
     if (cloud) {
-      const json = await cloudPost({ action: "update", id: orderId, status: nextStatus });
+      const json = await cloudPost({ action: "update", id: orderId, ...patch });
       if (json && json.success) return json.order || true;
       throw new Error((json && json.error) || "cloud update bad");
     }
@@ -133,7 +137,7 @@
     const res = await fetch(getOrdersApiUrl(encodeURIComponent(orderId)), {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ status: nextStatus }),
+      body: JSON.stringify(patch),
     });
     const json = await parseJsonSafe(res);
     if (json && json.success) return json.order || true;

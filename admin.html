@@ -73,7 +73,7 @@
           </button>
           <button type="button" class="sidebar-link" data-panel="orders">
             <span class="sidebar-ico">☰</span>
-            <span>Orders</span>
+            <span>অর্ডার ম্যানেজ</span>
             <span class="sidebar-badge" id="sidebar-pending-count" hidden>0</span>
           </button>
 
@@ -233,6 +233,17 @@
 
           <!-- PANEL: Orders -->
           <div class="admin-panel" id="panel-orders" data-panel="orders" hidden>
+            <section class="orders-manage-head">
+              <div>
+                <h2>অর্ডার ম্যানেজ</h2>
+                <p>পেন্ডিং কনফার্ম → কল/WhatsApp → ডেলিভারি সম্পন্ন</p>
+              </div>
+              <div class="orders-manage-actions">
+                <button type="button" class="btn-cms-ghost" id="btn-refresh-orders">↻ রিফ্রেশ</button>
+                <button type="button" class="btn-cms-primary" data-goto="cloud">Order Sync</button>
+              </div>
+            </section>
+
             <div class="orders-api-banner" id="orders-api-banner" hidden>
               <strong>⚠️ পিসি অ্যাডমিনে অর্ডার আসছে না</strong>
               <p>
@@ -255,7 +266,7 @@
                   <input type="file" id="import-orders-file" accept="application/json,.json,text/plain" hidden />
                 </label>
               </div>
-              <details class="order-sync-paste" open>
+              <details class="order-sync-paste">
                 <summary>পিসিতে JSON পেস্ট করে Import</summary>
                 <textarea id="import-orders-text" rows="4" placeholder='ফোন থেকে Copy করা JSON এখানে পেস্ট করুন...'></textarea>
                 <button type="button" class="btn-action-confirm" id="btn-import-orders-text">✓ Paste Import (পিসি)</button>
@@ -263,57 +274,55 @@
             </section>
 
             <section class="manual-order-section" id="manual-order-section">
-              <details open>
-                <summary>＋ WhatsApp থেকে ম্যানুয়াল অর্ডার যোগ (পিসির জন্য সহজ)</summary>
+              <details>
+                <summary>＋ ম্যানুয়াল অর্ডার যোগ (WhatsApp থেকে)</summary>
                 <form class="manual-order-form" id="manual-order-form">
                   <label>
-                    <span>Nam *</span>
-                    <input type="text" id="manual-name" required placeholder="Customer name" />
+                    <span>নাম *</span>
+                    <input type="text" id="manual-name" required placeholder="গ্রাহকের নাম" />
                   </label>
                   <label>
-                    <span>Mobile *</span>
+                    <span>মোবাইল *</span>
                     <input type="tel" id="manual-phone" required placeholder="01XXXXXXXXX" />
                   </label>
                   <label class="full">
-                    <span>Address *</span>
-                    <input type="text" id="manual-address" required placeholder="Full address" />
+                    <span>ঠিকানা *</span>
+                    <input type="text" id="manual-address" required placeholder="সম্পূর্ণ ঠিকানা" />
                   </label>
                   <label>
-                    <span>Cable (ft)</span>
-                    <input type="number" id="manual-cable" min="0" max="500" value="30" />
+                    <span>Cable (ফুট) *</span>
+                    <input type="number" id="manual-cable" min="1" max="500" required placeholder="যেমন: 30" />
                   </label>
                   <label class="full">
-                    <span>Note</span>
-                    <input type="text" id="manual-note" placeholder="Optional" />
+                    <span>নোট</span>
+                    <input type="text" id="manual-note" placeholder="ঐচ্ছিক" />
                   </label>
-                  <button type="submit" class="btn-action-confirm">✓ Add Order</button>
+                  <button type="submit" class="btn-action-confirm">✓ অর্ডার যোগ করুন</button>
                 </form>
               </details>
             </section>
 
-            
-
             <section class="toolbar-section">
               <div class="filter-tabs" id="filter-tabs">
                 <button type="button" class="filter-tab is-active" data-filter="all">
-                  All (<span id="count-all">0</span>)
+                  সব (<span id="count-all">0</span>)
                 </button>
                 <button type="button" class="filter-tab" data-filter="pending">
-                  Pending (<span id="count-pending">0</span>)
+                  পেন্ডিং (<span id="count-pending">0</span>)
                 </button>
                 <button type="button" class="filter-tab" data-filter="confirmed">
-                  Confirmed (<span id="count-confirmed">0</span>)
+                  কনফার্মড (<span id="count-confirmed">0</span>)
                 </button>
                 <button type="button" class="filter-tab" data-filter="delivered">
-                  Delivered (<span id="count-delivered">0</span>)
+                  ডেলিভার্ড (<span id="count-delivered">0</span>)
                 </button>
                 <button type="button" class="filter-tab" data-filter="cancelled">
-                  Cancelled (<span id="count-cancelled">0</span>)
+                  বাতিল (<span id="count-cancelled">0</span>)
                 </button>
               </div>
               <div class="search-box">
                 <span class="search-icon">🔍</span>
-                <input type="search" id="order-search" placeholder="Name, phone or order ID..." aria-label="Search orders" />
+                <input type="search" id="order-search" placeholder="নাম, মোবাইল বা অর্ডার ID..." aria-label="Search orders" />
                 <button type="button" class="btn-clear-search" id="btn-clear-search" hidden aria-label="Clear">✕</button>
               </div>
             </section>
@@ -321,8 +330,8 @@
             <section class="orders-section">
               <div class="empty-state" id="orders-empty" hidden>
                 <div class="empty-icon">📭</div>
-                <h3>No orders found</h3>
-                <p id="empty-message">Customer order dile ekhane asbe.</p>
+                <h3>কোনো অর্ডার নেই</h3>
+                <p id="empty-message">ওয়েবসাইট থেকে অর্ডার এলে এখানে দেখাবে।</p>
               </div>
               <div class="orders-grid" id="orders-grid"></div>
             </section>
@@ -558,6 +567,45 @@
         <button type="button" class="btn-print" onclick="window.print()">🖨 প্রিন্ট / PDF সংরক্ষণ</button>
         <button type="button" class="btn-close-modal" id="btn-close-invoice">বন্ধ করুন</button>
       </div>
+    </div>
+  </div>
+
+  <!-- Edit Order Modal -->
+  <div class="modal-backdrop" id="edit-order-modal" hidden>
+    <div class="handle-panel edit-order-panel" role="dialog" aria-labelledby="edit-order-title">
+      <div class="handle-panel-head">
+        <div>
+          <p class="handle-eyebrow">অর্ডার এডিট</p>
+          <h2 id="edit-order-title">তথ্য আপডেট করুন</h2>
+          <p class="handle-sub" id="edit-order-meta">#—</p>
+        </div>
+        <button type="button" class="btn-close-modal" id="btn-close-edit-order" aria-label="বন্ধ">✕</button>
+      </div>
+      <form id="edit-order-form" class="manual-order-form edit-order-form">
+        <input type="hidden" id="edit-order-id" />
+        <label>
+          <span>নাম *</span>
+          <input type="text" id="edit-order-name" required />
+        </label>
+        <label>
+          <span>মোবাইল *</span>
+          <input type="tel" id="edit-order-phone" required />
+        </label>
+        <label class="full">
+          <span>ঠিকানা *</span>
+          <input type="text" id="edit-order-address" required />
+        </label>
+        <label>
+          <span>Cable (ফুট) *</span>
+          <input type="number" id="edit-order-cable" min="1" max="500" required />
+        </label>
+        <label class="full">
+          <span>নোট</span>
+          <input type="text" id="edit-order-note" />
+        </label>
+        <p class="edit-order-total">নতুন মোট: <strong id="edit-order-total">৳০</strong></p>
+        <button type="submit" class="btn-action-confirm">✓ সেভ করুন</button>
+      </form>
     </div>
   </div>
 

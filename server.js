@@ -303,8 +303,15 @@ const server = http.createServer(async (req, res) => {
         }
       }
       if (data.adminNote !== undefined) existing.adminNote = data.adminNote;
-      if (data.address) existing.address = data.address;
-      if (data.phone) existing.phone = data.phone;
+      if (data.note !== undefined) existing.note = data.note;
+      if (data.name !== undefined) existing.name = data.name;
+      if (data.address !== undefined) existing.address = data.address;
+      if (data.phone !== undefined) existing.phone = data.phone;
+      if (data.cableFeet !== undefined) existing.cableFeet = Number(data.cableFeet) || 0;
+      if (data.controllerPrice !== undefined) existing.controllerPrice = Number(data.controllerPrice) || 0;
+      if (data.sensorPrice !== undefined) existing.sensorPrice = Number(data.sensorPrice) || 0;
+      if (data.cablePrice !== undefined) existing.cablePrice = Number(data.cablePrice) || 0;
+      if (data.totalPrice !== undefined) existing.totalPrice = Number(data.totalPrice) || 0;
 
       orders[index] = existing;
       saveOrders(orders);

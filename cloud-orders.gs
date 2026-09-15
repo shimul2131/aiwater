@@ -176,7 +176,16 @@ function doPost(e) {
           existing.confirmedAt = new Date().toISOString();
         }
       }
+      if (body.name !== undefined) existing.name = body.name;
+      if (body.phone !== undefined) existing.phone = body.phone;
+      if (body.address !== undefined) existing.address = body.address;
+      if (body.note !== undefined) existing.note = body.note;
       if (body.adminNote !== undefined) existing.note = body.adminNote;
+      if (body.cableFeet !== undefined) existing.cableFeet = Number(body.cableFeet) || 0;
+      if (body.controllerPrice !== undefined) existing.controllerPrice = Number(body.controllerPrice) || 0;
+      if (body.sensorPrice !== undefined) existing.sensorPrice = Number(body.sensorPrice) || 0;
+      if (body.cablePrice !== undefined) existing.cablePrice = Number(body.cablePrice) || 0;
+      if (body.totalPrice !== undefined) existing.totalPrice = Number(body.totalPrice) || 0;
 
       sheet.getRange(row, 1, 1, 15).setValues([[
         existing.id, existing.createdAt, existing.formattedTime, existing.name, existing.phone,

@@ -121,15 +121,13 @@
   box-shadow: none;
 }
 
-.order-combo .order-flow-steps li.is-current,
-.order-combo .order-flow-steps li:first-child {
+.order-combo .order-flow-steps li.is-current {
   color: var(--pro-teal);
   background: transparent;
   box-shadow: none;
 }
 
-.order-combo .order-flow-steps li.is-current span,
-.order-combo .order-flow-steps li:first-child span {
+.order-combo .order-flow-steps li.is-current span {
   background: var(--pro-teal);
   border-color: var(--pro-teal);
   color: #fff;
@@ -719,4 +717,17 @@ body:has(.login-wrapper) {
 .order-combo .order-step--video .video-link-btn {
   display: inline-flex;
   margin-top: 0.55rem;
+}
+
+.order-combo .price-calc-order {
+  margin-top: 0.75rem;
+  width: 100%;
+  justify-content: center;
+  min-height: 3rem;
+  font-size: 1.05rem;
+  font-weight: 700;
+}
+
+.order-combo .cable-must-hint.is-visible {
+  display: block;
 }

@@ -2,7 +2,7 @@
  * Admin — prices, links, videos, reviews, ordersApi
  */
 window.SITE_CONFIG = {
-  ordersApi: "https://script.google.com/macros/s/AKfycbx7KEkIkwUcpo-czG1rC9DCXl4bV6tDEdmvkOKfJdAJ03vwEt4pJlkiYLQJ6zK6n_00yw/exec",
+  ordersApi: "https://script.google.com/macros/s/AKfycbyvwBwBYgRVzAttRajGcu4UE62lBxEwF4Fl36NRnnT_xoYii8INZNFfsTG6HRy-YECfGA/exec",
   links: {
     playStore: "https://play.google.com/store/apps/details?id=com.water.aicontroller&pcampaignid=web_share",
     whatsapp: "8801745242000",
