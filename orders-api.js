@@ -215,6 +215,67 @@
     }
   }
 
+  async function fetchReviewsList() {
+    if (!isCloudOrdersApi()) return [];
+    try {
+      const json = await cloudPost({ action: "listReviews" });
+      if (json && json.success && Array.isArray(json.reviews)) return json.reviews;
+    } catch (e) {}
+    try {
+      const url = getOrdersApiUrl().replace(/\/$/, "");
+      const res = await fetch(url + (url.includes("?") ? "&" : "?") + "type=reviews&_=" + Date.now(), {
+        method: "GET",
+        cache: "no-store",
+        redirect: "follow",
+        mode: "cors",
+      });
+      const json = await parseJsonFromResponse(res);
+      if (json && json.success && Array.isArray(json.reviews)) return json.reviews;
+    } catch (e) {}
+    return [];
+  }
+
+  async function createReviewRemote(payload) {
+    if (!isCloudOrdersApi()) throw new Error("cloud not configured");
+    const json = await cloudPost({
+      action: "createReview",
+      id: payload.id,
+      name: payload.name,
+      comment: payload.comment,
+      createdAt: payload.createdAt,
+    });
+    if (json && json.success && json.review) return json.review;
+    throw new Error((json && json.error) || "create review failed");
+  }
+
+  async function deleteReviewRemote(reviewId) {
+    if (!isCloudOrdersApi()) throw new Error("cloud not configured");
+    const json = await cloudPost({ action: "deleteReview", id: reviewId });
+    if (json && json.success) return json.reviews || [];
+    throw new Error((json && json.error) || "delete review failed");
+  }
+
+  async function sendOrderToSteadfast(orderId, orderFallback) {
+    if (!isCloudOrdersApi()) throw new Error("Order Sync URL লাগবে (Steadfast Apps Script দিয়ে যায়)");
+    const json = await cloudPost({
+      action: "sendSteadfast",
+      id: orderId,
+      order: orderFallback || null,
+    });
+    if (json && json.success) return json;
+    throw new Error((json && json.error) || "Steadfast পাঠানো ব্যর্থ");
+  }
+
+  async function steadfastConfigured() {
+    if (!isCloudOrdersApi()) return false;
+    try {
+      const json = await cloudPost({ action: "steadfastStatus" });
+      return !!(json && json.success && json.configured);
+    } catch (e) {
+      return false;
+    }
+  }
+
   window.OrdersAPI = {
     getConfiguredOrdersApi,
     getOrdersApiUrl,
@@ -225,5 +286,10 @@
     updateOrderRemote,
     deleteOrderRemote,
     testCloudConnection,
+    fetchReviewsList,
+    createReviewRemote,
+    deleteReviewRemote,
+    sendOrderToSteadfast,
+    steadfastConfigured,
   };
 })();

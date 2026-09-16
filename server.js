@@ -311,7 +311,12 @@ const server = http.createServer(async (req, res) => {
       if (data.controllerPrice !== undefined) existing.controllerPrice = Number(data.controllerPrice) || 0;
       if (data.sensorPrice !== undefined) existing.sensorPrice = Number(data.sensorPrice) || 0;
       if (data.cablePrice !== undefined) existing.cablePrice = Number(data.cablePrice) || 0;
-      if (data.totalPrice !== undefined) existing.totalPrice = Number(data.totalPrice) || 0;
+      if (data.steadfastTracking !== undefined) existing.steadfastTracking = data.steadfastTracking;
+      if (data.steadfastConsignmentId !== undefined) existing.steadfastConsignmentId = data.steadfastConsignmentId;
+      if (data.courierName !== undefined) existing.courierName = data.courierName;
+      if (data.consignmentNo !== undefined) existing.consignmentNo = data.consignmentNo;
+      if (data.courierCharge !== undefined) existing.courierCharge = data.courierCharge;
+      if (data.shippingNote !== undefined) existing.shippingNote = data.shippingNote;
 
       orders[index] = existing;
       saveOrders(orders);

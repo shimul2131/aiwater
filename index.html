@@ -15,8 +15,8 @@
       href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;500;600;700&family=Sora:wght@500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap"
       rel="stylesheet"
     />
-    <link rel="stylesheet" href="style.css?v=17" />
-    <link rel="stylesheet" href="pro-ui.css?v=17" />
+    <link rel="stylesheet" href="style.css?v=24" />
+    <link rel="stylesheet" href="pro-ui.css?v=24" />
     <link rel="icon" href="assets/app_icon.png" type="image/png" />
   </head>
   <body>
@@ -336,7 +336,7 @@
                 <div class="order-combo-head">
                   <p class="order-combo-badge">Cash on Delivery</p>
                   <h3 id="price-calc-title">প্যাকেজ অর্ডার</h3>
-                  <p class="price-calc-lead">১) Cable ফুট লিখুন → Order Now → ২) নাম দিন → অর্ডার কনফার্ম।</p>
+                  <p class="price-calc-lead">১) Cable ফুট বেছে নিন → Order Now → ২) অর্ডার তথ্য → কনফার্ম।</p>
                 </div>
 
                 <ol class="order-flow-steps" aria-label="অর্ডার ধাপ">
@@ -374,9 +374,19 @@
                     </figure>
                   </div>
 
-                  <label class="price-calc-feet">
-                    <span>Cable কত ফুট লাগবে? <em class="req-mark">*</em> <small>(অবশ্যই দিতে হবে)</small></span>
-                    <div class="price-calc-feet-row">
+                  <div class="price-calc-feet" id="cable-feet-picker">
+                    <span class="price-calc-feet-label">Cable কত ফুট লাগবে? <em class="req-mark">*</em></span>
+                    <div class="cable-feet-options" role="group" aria-label="Cable ফুট বেছে নিন">
+                      <button type="button" class="cable-feet-opt" data-feet="20">20</button>
+                      <button type="button" class="cable-feet-opt" data-feet="30">30</button>
+                      <button type="button" class="cable-feet-opt" data-feet="40">40</button>
+                      <button type="button" class="cable-feet-opt" data-feet="50">50</button>
+                      <button type="button" class="cable-feet-opt" data-feet="60">60</button>
+                      <button type="button" class="cable-feet-opt" data-feet="80">80</button>
+                      <button type="button" class="cable-feet-opt" data-feet="100">100</button>
+                      <button type="button" class="cable-feet-opt cable-feet-opt--custom" data-feet="custom">Custom</button>
+                    </div>
+                    <div class="price-calc-feet-row cable-custom-row" id="cable-custom-row" hidden>
                       <input
                         type="number"
                         id="calc-cable-feet"
@@ -384,15 +394,16 @@
                         max="500"
                         step="1"
                         value=""
-                        placeholder="যেমন: 30"
+                        placeholder="যেমন: 75"
                         inputmode="numeric"
-                        required
-                        aria-required="true"
+                        aria-label="Custom cable feet"
                       />
                       <span class="price-calc-unit">ফুট</span>
                     </div>
-                    <p class="cable-must-hint" id="cable-must-hint">অর্ডার করতে Cable সাইজ (ফুট) অবশ্যই লিখুন।</p>
-                  </label>
+                    <input type="hidden" id="calc-cable-feet-value" value="" />
+                    <p class="cable-selected-label" id="cable-selected-label" hidden>নির্বাচিত: <strong>—</strong> ফুট</p>
+                    <p class="cable-must-hint" id="cable-must-hint">অর্ডার করতে Cable সাইজ (ফুট) অবশ্যই বেছে নিন।</p>
+                  </div>
 
                   <ul class="price-calc-breakdown">
                     <li>
@@ -421,17 +432,18 @@
                 </div>
 
                 <div class="order-step order-step--details" id="order-form-container">
-                  <div class="order-step-label"><span>২</span> নাম ও ডেলিভারি তথ্য</div>
-                  <p class="order-step-hint">নিচে নাম, মোবাইল ও ঠিকানা দিয়ে অর্ডার কনফার্ম করুন</p>
+                  <div class="order-step-label"><span>২</span> অর্ডার তথ্য</div>
+                  <p class="order-step-hint">নাম, মোবাইল ও ঠিকানা দিয়ে অর্ডার কনফার্ম করুন</p>
 
                   <div class="order-form-box" id="order-form-box">
                     <form id="customer-order-form">
+                      <p class="order-cable-chip" id="order-cable-chip" hidden>কেবল: <strong>—</strong> ফুট</p>
                       <div class="order-input-group">
-                        <label for="order-customer-name">পূর্ণ নাম <span style="color:#ef4444">*</span></label>
+                        <label for="order-customer-name">আপনার নাম <span style="color:#ef4444">*</span></label>
                         <input
                           type="text"
                           id="order-customer-name"
-                          placeholder="উদাঃ মোঃ আরিফুল ইসলাম"
+                          placeholder="পুরো নাম"
                           required
                           autocomplete="name"
                         />
@@ -442,18 +454,18 @@
                         <input
                           type="tel"
                           id="order-customer-phone"
-                          placeholder="উদাঃ 017xxxxxxxx"
+                          placeholder="01XXXXXXXXX"
                           required
                           autocomplete="tel"
                         />
                       </div>
 
                       <div class="order-input-group">
-                        <label for="order-customer-address">ডেলিভারি ঠিকানা <span style="color:#ef4444">*</span></label>
+                        <label for="order-customer-address">সম্পূর্ণ ঠিকানা <span style="color:#ef4444">*</span></label>
                         <textarea
                           id="order-customer-address"
                           rows="2"
-                          placeholder="বাড়ি/হোল্ডিং, রোড, থানা, জেলা"
+                          placeholder="বাসা, রোড, থানা, জেলা"
                           required
                           autocomplete="street-address"
                         ></textarea>
@@ -474,7 +486,11 @@
                       </div>
 
                       <button type="submit" class="btn-submit-order" id="btn-submit-order">
-                        <span>✓ প্যাকেজ অর্ডার কনফার্ম করুন</span>
+                        <span class="btn-submit-order__row">
+                          <span class="btn-submit-order__icon" aria-hidden="true">✓</span>
+                          <span class="btn-submit-order__text">প্যাকেজ অর্ডার কনফার্ম করুন</span>
+                        </span>
+                        <span class="btn-submit-order__price" id="btn-submit-order-price">৳৬,০৫০</span>
                       </button>
 
                       <div class="order-badges-guarantee">
@@ -824,24 +840,46 @@
       </section>
 
       <!-- 10. CUSTOMER REVIEWS SLIDESHOW -->
-      <section class="section section-alt" id="reviews" aria-labelledby="reviews-title">
-        <div class="container">
-          <div class="section-head">
-            <h2 id="reviews-title">সম্মানিত কাস্টমারের মতামত</h2>
-            <p>গ্রাহকদের আসল কমেন্ট স্ক্রিনশট</p>
+      <section class="section section-alt reviews-section" id="reviews" aria-labelledby="reviews-title">
+        <div class="container reviews-wrap">
+          <div class="reviews-head">
+            <p class="reviews-kicker">REVIEWS</p>
+            <h2 id="reviews-title">কাস্টমার রিভিউ</h2>
           </div>
 
-          <div class="reviews-slider" id="reviews-slider" hidden>
-            <button type="button" class="reviews-nav reviews-nav--prev" id="reviews-prev" aria-label="আগের রিভিউ">‹</button>
-            <div class="reviews-viewport">
-              <div class="reviews-track" id="reviews-track"></div>
+          <div class="reviews-slider-card">
+            <div class="reviews-slider" id="reviews-slider" hidden>
+              <button type="button" class="reviews-nav reviews-nav--prev" id="reviews-prev" aria-label="আগের রিভিউ">‹</button>
+              <div class="reviews-viewport">
+                <div class="reviews-track" id="reviews-track"></div>
+              </div>
+              <button type="button" class="reviews-nav reviews-nav--next" id="reviews-next" aria-label="পরের রিভিউ">›</button>
+              <div class="reviews-dots" id="reviews-dots" aria-label="স্লাইড নেভিগেশন"></div>
             </div>
-            <button type="button" class="reviews-nav reviews-nav--next" id="reviews-next" aria-label="পরের রিভিউ">›</button>
-            <div class="reviews-dots" id="reviews-dots" aria-label="স্লাইড নেভিগেশন"></div>
+            <div class="reviews-empty" id="reviews-empty">
+              <p>এখনো কোনো রিভিউ নেই — নিচে আপনার মতামত দিন।</p>
+            </div>
           </div>
 
-          <div class="reviews-empty" id="reviews-empty">
-            <p>কাস্টমার কমেন্ট স্ক্রিনশট শীঘ্রই যোগ করা হবে।</p>
+          <div class="reviews-form-card">
+            <h3>আপনার রিভিউ দিন</h3>
+            <p class="reviews-form-lead">ছবি ও কমেন্ট যোগ করুন, স্লাইডারে দেখাবে।</p>
+            <form id="customer-review-form" class="customer-review-form">
+              <label>
+                <span>আপনার নাম</span>
+                <input type="text" id="review-name" name="name" required placeholder="নাম - শহর" autocomplete="name" />
+              </label>
+              <label>
+                <span>কমেন্ট</span>
+                <textarea id="review-comment" name="comment" rows="4" required placeholder="আপনার মতামত লিখুন"></textarea>
+              </label>
+              <label>
+                <span>ছবি</span>
+                <input type="file" id="review-photo" name="photo" accept="image/*" />
+              </label>
+              <button type="submit" class="btn-review-submit" id="btn-review-submit">রিভিউ পাঠান</button>
+              <p class="reviews-form-msg" id="reviews-form-msg" hidden></p>
+            </form>
           </div>
         </div>
       </section>
@@ -1000,9 +1038,9 @@
       >
     </div>
 
-    <script src="site-config.js?v=21"></script>
-    <script src="orders-api.js?v=21"></script>
-    <script src="site-content.js?v=21"></script>
+    <script src="site-config.js?v=25"></script>
+    <script src="orders-api.js?v=25"></script>
+    <script src="site-content.js?v=25"></script>
     <script src="script.js" defer></script>
   </body>
 </html>

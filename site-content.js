@@ -84,40 +84,134 @@
   }
 
   function getCableFeetValue() {
-    const feetInput = document.getElementById("calc-cable-feet");
-    const raw = feetInput ? String(feetInput.value).trim() : "";
-    if (raw === "") return null;
-    let feet = Number(raw);
+    const hidden = document.getElementById("calc-cable-feet-value");
+    const customInput = document.getElementById("calc-cable-feet");
+    const mode = (hidden && hidden.getAttribute("data-mode")) || "";
+
+    if (mode === "custom") {
+      const raw = customInput ? String(customInput.value).trim() : "";
+      if (raw === "") return null;
+      let feet = Number(raw);
+      if (!Number.isFinite(feet)) return null;
+      feet = Math.round(feet);
+      if (feet < 1 || feet > 500) return null;
+      return feet;
+    }
+
+    const fromHidden = hidden ? String(hidden.value).trim() : "";
+    if (fromHidden === "") return null;
+    let feet = Number(fromHidden);
     if (!Number.isFinite(feet)) return null;
     feet = Math.round(feet);
     if (feet < 1 || feet > 500) return null;
     return feet;
   }
 
-  function requireCableSize(scrollToCable) {
-    const feet = getCableFeetValue();
-    const feetInput = document.getElementById("calc-cable-feet");
-    const hint = document.getElementById("cable-must-hint");
-    if (feet != null) {
-      if (feetInput) feetInput.classList.remove("is-invalid");
-      if (hint) hint.classList.remove("is-visible");
-      return feet;
+  function updateCableSelectedLabel(feet) {
+    const label = document.getElementById("cable-selected-label");
+    const chip = document.getElementById("order-cable-chip");
+    if (label) {
+      if (feet != null) {
+        label.hidden = false;
+        const strong = label.querySelector("strong");
+        if (strong) strong.textContent = String(feet);
+      } else {
+        label.hidden = true;
+      }
     }
-    if (feetInput) {
-      feetInput.classList.add("is-invalid");
-      if (scrollToCable !== false) {
-        feetInput.scrollIntoView({ behavior: "smooth", block: "center" });
+    if (chip) {
+      if (feet != null) {
+        chip.hidden = false;
+        const strong = chip.querySelector("strong");
+        if (strong) strong.textContent = String(feet);
+      } else {
+        chip.hidden = true;
+      }
+    }
+  }
+
+  function setCableFeetSelection(feetOrCustom, options) {
+    const opts = options || {};
+    const hidden = document.getElementById("calc-cable-feet-value");
+    const customRow = document.getElementById("cable-custom-row");
+    const customInput = document.getElementById("calc-cable-feet");
+    const hint = document.getElementById("cable-must-hint");
+    const buttons = document.querySelectorAll(".cable-feet-opt");
+
+    buttons.forEach((btn) => {
+      const val = btn.getAttribute("data-feet");
+      const isCustom = feetOrCustom === "custom";
+      const active = isCustom ? val === "custom" : String(val) === String(feetOrCustom);
+      btn.classList.toggle("is-active", active);
+      btn.setAttribute("aria-pressed", active ? "true" : "false");
+    });
+
+    if (feetOrCustom === "custom") {
+      if (hidden) {
+        hidden.value = "";
+        hidden.setAttribute("data-mode", "custom");
+      }
+      if (customRow) customRow.hidden = false;
+      if (!opts.skipFocus && customInput) {
         setTimeout(() => {
           try {
-            feetInput.focus({ preventScroll: true });
+            customInput.focus({ preventScroll: true });
           } catch (err) {
-            feetInput.focus();
+            customInput.focus();
+          }
+        }, 50);
+      }
+      updateCableSelectedLabel(getCableFeetValue());
+    } else {
+      const feet = Number(feetOrCustom);
+      if (hidden) {
+        hidden.value = String(feet);
+        hidden.setAttribute("data-mode", "preset");
+      }
+      if (customRow) customRow.hidden = true;
+      if (customInput) {
+        customInput.value = String(feet);
+        customInput.classList.remove("is-invalid");
+      }
+      updateCableSelectedLabel(feet);
+    }
+
+    if (hint) hint.classList.remove("is-visible");
+    if (typeof opts.onChange === "function") opts.onChange();
+  }
+
+  function requireCableSize(scrollToCable) {
+    const feet = getCableFeetValue();
+    const picker = document.getElementById("cable-feet-picker");
+    const customInput = document.getElementById("calc-cable-feet");
+    const hint = document.getElementById("cable-must-hint");
+    const hidden = document.getElementById("calc-cable-feet-value");
+    const mode = hidden ? hidden.getAttribute("data-mode") : "";
+
+    if (feet != null) {
+      if (customInput) customInput.classList.remove("is-invalid");
+      if (hint) hint.classList.remove("is-visible");
+      updateCableSelectedLabel(feet);
+      return feet;
+    }
+
+    if (hint) hint.classList.add("is-visible");
+    if (mode === "custom" && customInput) {
+      customInput.classList.add("is-invalid");
+    }
+    if (scrollToCable !== false && picker) {
+      picker.scrollIntoView({ behavior: "smooth", block: "center" });
+      if (mode === "custom" && customInput) {
+        setTimeout(() => {
+          try {
+            customInput.focus({ preventScroll: true });
+          } catch (err) {
+            customInput.focus();
           }
         }, 280);
       }
     }
-    if (hint) hint.classList.add("is-visible");
-    alert("অর্ডার করতে Cable সাইজ (কত ফুট) অবশ্যই দিতে হবে।");
+    alert("অর্ডার করতে Cable কত ফুট লাগবে সেটা বেছে নিন (বা Custom লিখুন)।");
     return null;
   }
 
@@ -130,7 +224,9 @@
 
   function goToOrderForm(e) {
     if (e) e.preventDefault();
-    if (requireCableSize(true) == null) return;
+    const feet = requireCableSize(true);
+    if (feet == null) return;
+    updateCableSelectedLabel(feet);
 
     const combo = document.getElementById("price-calc");
     const box = document.getElementById("order-form-container") || document.getElementById("order-form-box");
@@ -212,7 +308,8 @@
     const orderBtn = document.getElementById("calc-order-btn");
     const waBtn = document.getElementById("calc-whatsapp-btn");
     const formTotal = document.getElementById("form-order-total");
-    const submitBtnLabel = document.querySelector("#btn-submit-order span");
+    const submitBtnPrice = document.getElementById("btn-submit-order-price");
+    const submitBtnLabel = document.querySelector("#btn-submit-order .btn-submit-order__text");
     const cableHint = document.getElementById("cable-must-hint");
 
     function recalc() {
@@ -240,13 +337,15 @@
       if (lineCable) lineCable.textContent = formatBdt(cableTotal);
       if (totalEl) totalEl.textContent = formatBdt(total);
       if (formTotal) formTotal.textContent = formatBdt(total);
+      if (submitBtnPrice) submitBtnPrice.textContent = formatBdt(total);
       if (submitBtnLabel) {
-        submitBtnLabel.textContent = "✓ প্যাকেজ অর্ডার কনফার্ম করুন · " + formatBdt(total);
+        submitBtnLabel.textContent = "প্যাকেজ অর্ডার কনফার্ম করুন";
       }
 
       if (parsed != null) {
         if (feetInput) feetInput.classList.remove("is-invalid");
         if (cableHint) cableHint.classList.remove("is-visible");
+        updateCableSelectedLabel(parsed);
       }
 
       if (orderBtn) {
@@ -273,8 +372,27 @@
       }
     }
 
+    const optionsWrap = document.querySelector(".cable-feet-options");
+    if (optionsWrap) {
+      optionsWrap.addEventListener("click", (e) => {
+        const btn = e.target.closest(".cable-feet-opt");
+        if (!btn) return;
+        const val = btn.getAttribute("data-feet");
+        if (val === "custom") {
+          setCableFeetSelection("custom", { onChange: recalc });
+        } else {
+          setCableFeetSelection(val, { onChange: recalc });
+        }
+        recalc();
+      });
+    }
+
     if (feetInput) {
-      feetInput.addEventListener("input", recalc);
+      feetInput.addEventListener("input", () => {
+        const hidden = document.getElementById("calc-cable-feet-value");
+        if (hidden) hidden.setAttribute("data-mode", "custom");
+        recalc();
+      });
       feetInput.addEventListener("change", recalc);
     }
     recalc();
@@ -315,7 +433,11 @@
 
       if (submitBtn) {
         submitBtn.disabled = true;
-        submitBtn.innerHTML = "<span>⏳ অর্ডার জমা হচ্ছে...</span>";
+        submitBtn.innerHTML =
+          '<span class="btn-submit-order__row">' +
+          '<span class="btn-submit-order__icon" aria-hidden="true">⏳</span>' +
+          '<span class="btn-submit-order__text">অর্ডার জমা হচ্ছে...</span>' +
+          "</span>";
       }
 
       const calc = currentCalcState;
@@ -450,7 +572,14 @@
 
       if (submitBtn) {
         submitBtn.disabled = false;
-        submitBtn.innerHTML = "<span>✓ প্যাকেজ অর্ডার কনফার্ম করুন</span>";
+        submitBtn.innerHTML =
+          '<span class="btn-submit-order__row">' +
+          '<span class="btn-submit-order__icon" aria-hidden="true">✓</span>' +
+          '<span class="btn-submit-order__text">প্যাকেজ অর্ডার কনফার্ম করুন</span>' +
+          "</span>" +
+          '<span class="btn-submit-order__price" id="btn-submit-order-price">' +
+          formatBdt(currentCalcState.total) +
+          "</span>";
       }
     });
 
@@ -462,13 +591,26 @@
           orderForm.hidden = false;
         }
         setOrderFlowStep(1);
+        const hidden = document.getElementById("calc-cable-feet-value");
+        const customRow = document.getElementById("cable-custom-row");
+        const customInput = document.getElementById("calc-cable-feet");
+        if (hidden) {
+          hidden.value = "";
+          hidden.removeAttribute("data-mode");
+        }
+        if (customRow) customRow.hidden = true;
+        if (customInput) {
+          customInput.value = "";
+          customInput.classList.remove("is-invalid");
+        }
+        document.querySelectorAll(".cable-feet-opt").forEach((btn) => {
+          btn.classList.remove("is-active");
+          btn.setAttribute("aria-pressed", "false");
+        });
+        updateCableSelectedLabel(null);
         const pkg = document.querySelector(".order-step--package");
         if (pkg) pkg.scrollIntoView({ behavior: "smooth", block: "start" });
-        const feetInput = document.getElementById("calc-cable-feet");
-        if (feetInput) {
-          feetInput.focus();
-          feetInput.dispatchEvent(new Event("input", { bubbles: true }));
-        }
+        if (customInput) customInput.dispatchEvent(new Event("input", { bubbles: true }));
       });
     }
   }
@@ -510,43 +652,174 @@
 
   initPlayStoreLinks();
 
+  const DEFAULT_TEXT_REVIEWS = [
+    {
+      id: "demo-1",
+      name: "রাকিব - ঢাকা",
+      comment: "AI Water Controller লাগানোর পর আর ট্যাঙ্ক ওভারফ্লো হয় না। মোবাইল থেকে সহজেই মোটর চালু-বন্ধ করতে পারি।",
+    },
+    {
+      id: "demo-2",
+      name: "নাসির - চট্টগ্রাম",
+      comment: "Premium Sensor খুব ভালো কাজ করে। পানির লেভেল অ্যাপে স্পষ্ট দেখা যায়।",
+    },
+    {
+      id: "demo-3",
+      name: "সাবিনা - রাজশাহী",
+      comment: "ইনস্টল সহজ, সাপোর্টও ভালো পেয়েছি। কেবল মাপ অনুযায়ী নিয়েছি — সব মিলিয়ে সন্তুষ্ট।",
+    },
+  ];
+
+  function escapeHtml(str) {
+    return String(str || "")
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;");
+  }
+
   function normalizeReviewList(list) {
     if (!Array.isArray(list)) return [];
     return list
       .map((item, i) => {
         if (typeof item === "string") {
-          return { id: "cfg-" + i, src: item.trim(), alt: "কাস্টমার কমেন্ট" };
+          return { id: "cfg-" + i, src: item.trim(), alt: "কাস্টমার কমেন্ট", type: "image" };
         }
-        if (item && item.src) {
+        if (!item || typeof item !== "object") return null;
+        if (item.comment || item.name) {
+          return {
+            id: item.id || "txt-" + i,
+            name: String(item.name || "কাস্টমার").trim(),
+            comment: String(item.comment || "").trim(),
+            src: item.src ? String(item.src).trim() : "",
+            type: "text",
+          };
+        }
+        if (item.src) {
           return {
             id: item.id || "cfg-" + i,
             src: String(item.src).trim(),
             alt: item.alt || "কাস্টমার কমেন্ট",
+            type: "image",
           };
         }
         return null;
       })
-      .filter((item) => item && item.src);
+      .filter((item) => {
+        if (!item) return false;
+        if (item.type === "text") return !!item.comment;
+        return !!item.src;
+      });
+  }
+
+  const USER_REVIEWS_KEY = "ai_controller_user_reviews";
+  const HIDDEN_REVIEWS_KEY = "ai_controller_hidden_review_ids";
+
+  function readHiddenReviewIds() {
+    try {
+      const raw = localStorage.getItem(HIDDEN_REVIEWS_KEY);
+      const list = raw ? JSON.parse(raw) : [];
+      return Array.isArray(list) ? list.map(String) : [];
+    } catch (e) {
+      return [];
+    }
+  }
+
+  function readUserReviews() {
+    try {
+      const raw = localStorage.getItem(USER_REVIEWS_KEY);
+      const hidden = new Set(readHiddenReviewIds());
+      const list = normalizeReviewList(raw ? JSON.parse(raw) : []);
+      return list.filter((r) => !hidden.has(String(r.id)));
+    } catch (e) {
+      return [];
+    }
+  }
+
+  function saveUserReviews(list) {
+    try {
+      localStorage.setItem(USER_REVIEWS_KEY, JSON.stringify(list.slice(0, 40)));
+    } catch (e) {}
   }
 
   async function loadReviews() {
-    let list = [];
+    const hidden = new Set(readHiddenReviewIds());
+    let cloudText = [];
+    try {
+      if (window.OrdersAPI && window.OrdersAPI.fetchReviewsList) {
+        const list = await window.OrdersAPI.fetchReviewsList();
+        cloudText = normalizeReviewList(
+          (list || []).map((r) => ({
+            id: r.id,
+            name: r.name,
+            comment: r.comment,
+            createdAt: r.createdAt,
+            type: "text",
+          }))
+        ).filter((r) => !hidden.has(String(r.id)));
+      }
+    } catch (e) {}
+
+    const userReviews = readUserReviews().filter(
+      (r) => !cloudText.some((c) => String(c.id) === String(r.id))
+    );
+
+    let configReviews = [];
     try {
       const apiUrl = new URL("api/reviews", window.location.href).href;
       const res = await fetch(apiUrl, { cache: "no-store" });
       if (res.ok) {
         const json = await res.json();
         if (json.success && Array.isArray(json.reviews) && json.reviews.length) {
-          list = normalizeReviewList(json.reviews);
+          configReviews = normalizeReviewList(json.reviews);
         }
       }
     } catch (e) {}
 
-    if (!list.length) {
-      list = normalizeReviewList(cfg.reviews || []);
+    if (!configReviews.length) {
+      configReviews = normalizeReviewList(cfg.reviews || []);
     }
-    return list;
+
+    const merged = cloudText.concat(userReviews).concat(configReviews);
+    const hasText = merged.some((r) => r.type === "text");
+    if (!hasText) {
+      return normalizeReviewList(DEFAULT_TEXT_REVIEWS)
+        .filter((r) => !hidden.has(String(r.id)))
+        .concat(merged);
+    }
+    return merged;
   }
+
+  function buildReviewSlideHtml(r) {
+    if (r.type === "image") {
+      return (
+        '<div class="reviews-slide reviews-slide--image">' +
+        '<img src="' +
+        escapeHtml(r.src) +
+        '" alt="' +
+        escapeHtml(r.alt || "কাস্টমার কমেন্ট") +
+        '" loading="lazy" />' +
+        "</div>"
+      );
+    }
+    return (
+      '<div class="reviews-slide reviews-slide--quote">' +
+      '<blockquote class="reviews-quote">' +
+      "<p>“" +
+      escapeHtml(r.comment) +
+      "”</p>" +
+      (r.src
+        ? '<img class="reviews-quote-photo" src="' + escapeHtml(r.src) + '" alt="" loading="lazy" />'
+        : "") +
+      '<cite class="reviews-author">' +
+      escapeHtml(r.name || "কাস্টমার") +
+      "</cite>" +
+      "</blockquote>" +
+      "</div>"
+    );
+  }
+
+  let reviewsSliderApi = null;
 
   function initReviewsSlider(reviews) {
     const slider = document.getElementById("reviews-slider");
@@ -561,37 +834,29 @@
     if (!reviews.length) {
       slider.hidden = true;
       if (empty) empty.hidden = false;
+      reviewsSliderApi = null;
       return;
     }
 
     if (empty) empty.hidden = true;
     slider.hidden = false;
 
-    track.innerHTML = reviews
-      .map(
-        (r) =>
-          '<div class="reviews-slide">' +
-          '<img src="' +
-          r.src.replace(/"/g, "") +
-          '" alt="' +
-          String(r.alt || "কাস্টমার কমেন্ট").replace(/"/g, "") +
-          '" loading="lazy" />' +
-          "</div>"
-      )
-      .join("");
+    track.innerHTML = reviews.map(buildReviewSlideHtml).join("");
 
-    dotsWrap.innerHTML = reviews
-      .map(
-        (_, i) =>
-          '<button type="button" class="reviews-dot' +
-          (i === 0 ? " is-active" : "") +
-          '" data-index="' +
-          i +
-          '" aria-label="স্লাইড ' +
-          (i + 1) +
-          '"></button>'
-      )
-      .join("");
+    if (dotsWrap) {
+      dotsWrap.innerHTML = reviews
+        .map(
+          (_, i) =>
+            '<button type="button" class="reviews-dot' +
+            (i === 0 ? " is-active" : "") +
+            '" data-index="' +
+            i +
+            '" aria-label="স্লাইড ' +
+            (i + 1) +
+            '"></button>'
+        )
+        .join("");
+    }
 
     let index = 0;
     let timer = null;
@@ -600,9 +865,11 @@
     function goTo(i) {
       index = (i + total) % total;
       track.style.transform = "translateX(-" + index * 100 + "%)";
-      dotsWrap.querySelectorAll(".reviews-dot").forEach((dot, di) => {
-        dot.classList.toggle("is-active", di === index);
-      });
+      if (dotsWrap) {
+        dotsWrap.querySelectorAll(".reviews-dot").forEach((dot, di) => {
+          dot.classList.toggle("is-active", di === index);
+        });
+      }
     }
 
     function next() {
@@ -616,7 +883,7 @@
     function startAuto() {
       stopAuto();
       if (total < 2) return;
-      timer = window.setInterval(next, 4000);
+      timer = window.setInterval(next, 4500);
     }
 
     function stopAuto() {
@@ -629,23 +896,152 @@
     if (prevBtn) prevBtn.onclick = () => { prev(); startAuto(); };
     if (nextBtn) nextBtn.onclick = () => { next(); startAuto(); };
 
-    dotsWrap.addEventListener("click", (e) => {
-      const btn = e.target.closest(".reviews-dot");
-      if (!btn) return;
-      goTo(Number(btn.getAttribute("data-index")) || 0);
-      startAuto();
-    });
+    if (dotsWrap) {
+      dotsWrap.onclick = (e) => {
+        const btn = e.target.closest(".reviews-dot");
+        if (!btn) return;
+        goTo(Number(btn.getAttribute("data-index")) || 0);
+        startAuto();
+      };
+    }
 
-    slider.addEventListener("mouseenter", stopAuto);
-    slider.addEventListener("mouseleave", startAuto);
-    slider.addEventListener("touchstart", stopAuto, { passive: true });
-    slider.addEventListener("touchend", startAuto, { passive: true });
+    slider.onmouseenter = stopAuto;
+    slider.onmouseleave = startAuto;
+    slider.ontouchstart = stopAuto;
+    slider.ontouchend = startAuto;
 
     goTo(0);
     startAuto();
+    reviewsSliderApi = { refresh: initReviewsSlider };
+  }
+
+  function readFileAsDataUrl(file) {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(String(reader.result || ""));
+      reader.onerror = reject;
+      reader.readAsDataURL(file);
+    });
+  }
+
+  function compressImageDataUrl(dataUrl, maxW, quality) {
+    return new Promise((resolve) => {
+      const img = new Image();
+      img.onload = () => {
+        const scale = Math.min(1, maxW / Math.max(img.width, 1));
+        const w = Math.max(1, Math.round(img.width * scale));
+        const h = Math.max(1, Math.round(img.height * scale));
+        const canvas = document.createElement("canvas");
+        canvas.width = w;
+        canvas.height = h;
+        const ctx = canvas.getContext("2d");
+        if (!ctx) {
+          resolve(dataUrl);
+          return;
+        }
+        ctx.drawImage(img, 0, 0, w, h);
+        try {
+          resolve(canvas.toDataURL("image/jpeg", quality));
+        } catch (e) {
+          resolve(dataUrl);
+        }
+      };
+      img.onerror = () => resolve(dataUrl);
+      img.src = dataUrl;
+    });
+  }
+
+  function initReviewForm() {
+    const form = document.getElementById("customer-review-form");
+    const msg = document.getElementById("reviews-form-msg");
+    if (!form) return;
+
+    form.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const name = ((document.getElementById("review-name") || {}).value || "").trim();
+      const comment = ((document.getElementById("review-comment") || {}).value || "").trim();
+      const photoInput = document.getElementById("review-photo");
+      const submitBtn = document.getElementById("btn-review-submit");
+
+      if (!name || !comment) {
+        if (msg) {
+          msg.hidden = false;
+          msg.textContent = "নাম ও কমেন্ট লিখুন।";
+        }
+        return;
+      }
+
+      if (submitBtn) {
+        submitBtn.disabled = true;
+        submitBtn.textContent = "পাঠানো হচ্ছে...";
+      }
+
+      let src = "";
+      try {
+        const file = photoInput && photoInput.files && photoInput.files[0];
+        if (file) {
+          if (file.size > 4 * 1024 * 1024) {
+            throw new Error("ছবি ৪MB এর কম হতে হবে");
+          }
+          const raw = await readFileAsDataUrl(file);
+          src = await compressImageDataUrl(raw, 900, 0.72);
+        }
+      } catch (err) {
+        if (msg) {
+          msg.hidden = false;
+          msg.textContent = err && err.message ? err.message : "ছবি আপলোড ব্যর্থ";
+        }
+        if (submitBtn) {
+          submitBtn.disabled = false;
+          submitBtn.textContent = "রিভিউ পাঠান";
+        }
+        return;
+      }
+
+      const entry = {
+        id: "user-" + Date.now(),
+        name,
+        comment,
+        src,
+        type: "text",
+        createdAt: new Date().toISOString(),
+      };
+
+      try {
+        if (window.OrdersAPI && window.OrdersAPI.createReviewRemote && window.OrdersAPI.hasCloudOrdersApi()) {
+          const remote = await window.OrdersAPI.createReviewRemote({
+            id: entry.id,
+            name: entry.name,
+            comment: entry.comment,
+            createdAt: entry.createdAt,
+          });
+          if (remote && remote.id) entry.id = remote.id;
+        }
+      } catch (err) {}
+
+      const list = [entry].concat(readUserReviews().filter((r) => String(r.id) !== String(entry.id)));
+      saveUserReviews(list);
+
+      const all = await loadReviews();
+      initReviewsSlider(all);
+
+      form.reset();
+      if (msg) {
+        msg.hidden = false;
+        msg.textContent = "✓ ধন্যবাদ! আপনার রিভিউ স্লাইডারে যোগ হয়েছে।";
+      }
+      if (submitBtn) {
+        submitBtn.disabled = false;
+        submitBtn.textContent = "রিভিউ পাঠান";
+      }
+
+      const sliderCard = document.querySelector(".reviews-slider-card");
+      if (sliderCard) sliderCard.scrollIntoView({ behavior: "smooth", block: "center" });
+    });
   }
 
   loadReviews().then(initReviewsSlider);
+  initReviewForm();
 
   mountVideo(
     "app-setup-video-wrap",

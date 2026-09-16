@@ -22,6 +22,9 @@
   const countAll = document.getElementById('count-all');
   const countPending = document.getElementById('count-pending');
   const countConfirmed = document.getElementById('count-confirmed');
+  const countProcessing = document.getElementById('count-processing');
+  const countReady = document.getElementById('count-ready');
+  const countShipped = document.getElementById('count-shipped');
   const countDelivered = document.getElementById('count-delivered');
   const countCancelled = document.getElementById('count-cancelled');
 
@@ -137,6 +140,7 @@
     fetchOrders(true);
     startPolling();
     if (typeof fetchAdminReviews === "function") fetchAdminReviews();
+    if (typeof fetchAdminComments === "function") fetchAdminComments();
     if (typeof fillManageForms === "function") fillManageForms();
     else if (typeof fillVideoForm === "function") fillVideoForm();
     if (typeof showAdminPanel === "function") showAdminPanel("orders");
@@ -240,9 +244,12 @@
   }
 
   function statusRank(status) {
-    if (status === 'delivered') return 3;
+    if (status === 'delivered') return 6;
+    if (status === 'shipped') return 5;
+    if (status === 'ready_to_ship') return 4;
+    if (status === 'processing') return 3;
     if (status === 'confirmed') return 2;
-    if (status === 'cancelled') return 0;
+    if (status === 'cancelled' || status === 'returned') return 0;
     return 1; // pending
   }
 
@@ -343,15 +350,21 @@
   }
 
   // Save Orders (handles both API and LocalStorage)
-  async function updateOrderStatus(orderId, nextStatus) {
+  async function updateOrderStatus(orderId, nextStatusOrPatch) {
+    const patch =
+      typeof nextStatusOrPatch === 'string'
+        ? { status: nextStatusOrPatch }
+        : Object.assign({}, nextStatusOrPatch || {});
+    const nextStatus = patch.status;
+
     try {
       if (window.OrdersAPI) {
-        await window.OrdersAPI.updateOrderRemote(orderId, nextStatus);
+        await window.OrdersAPI.updateOrderRemote(orderId, patch);
       } else {
         const res = await fetch(getApiUrl(encodeURIComponent(orderId)), {
           method: 'PATCH',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ status: nextStatus })
+          body: JSON.stringify(patch)
         });
         if (res.ok) {
           await res.json().catch(() => ({}));
@@ -359,25 +372,27 @@
       }
     } catch (e) {}
 
-    // Update in local memory and storage (always — works even without API)
     orders = orders.map(o => {
-      if (o.id === orderId) {
-        return {
-          ...o,
-          status: nextStatus,
-          confirmedAt: nextStatus === 'confirmed' ? (o.confirmedAt || new Date().toISOString()) : o.confirmedAt
-        };
+      if (o.id !== orderId) return o;
+      const merged = Object.assign({}, o, patch);
+      if (nextStatus === 'confirmed') {
+        merged.confirmedAt = o.confirmedAt || new Date().toISOString();
       }
-      return o;
+      return merged;
     });
 
     try {
       localStorage.setItem('ai_controller_orders', JSON.stringify(orders));
     } catch (e) {}
 
-    // Confirm/deliver/cancel করে Pending ট্যাবে থাকলে অর্ডার উধাও মনে হয় —
-    // তাই সেই স্ট্যাটাসের ট্যাবে নিয়ে দেখাই
-    if (nextStatus === 'confirmed' || nextStatus === 'delivered' || nextStatus === 'cancelled') {
+    if (
+      nextStatus === 'confirmed' ||
+      nextStatus === 'processing' ||
+      nextStatus === 'ready_to_ship' ||
+      nextStatus === 'shipped' ||
+      nextStatus === 'delivered' ||
+      nextStatus === 'cancelled'
+    ) {
       setActiveFilter(nextStatus);
     }
 
@@ -386,6 +401,12 @@
     if (nextStatus === 'confirmed') {
       showToast(`অর্ডার #${orderId} কনফার্ম হয়েছে — হ্যান্ডেল প্যানেল খুলছে...`, 'success');
       setTimeout(() => openHandlePanel(orderId), 250);
+    } else if (nextStatus === 'processing') {
+      showToast(`অর্ডার #${orderId} প্রসেসিং-এ আছে`, 'success');
+    } else if (nextStatus === 'ready_to_ship') {
+      showToast(`অর্ডার #${orderId} শিপমেন্টের জন্য রেডি`, 'success');
+    } else if (nextStatus === 'shipped') {
+      showToast(`অর্ডার #${orderId} শিপড হয়েছে`, 'success');
     } else if (nextStatus === 'delivered') {
       showToast(`অর্ডার #${orderId} ডেলিভারি সম্পন্ন চিহ্নিত হয়েছে।`, 'success');
     } else if (nextStatus === 'cancelled') {
@@ -448,17 +469,25 @@
     const total = orders.length;
     const pending = orders.filter(o => o.status === 'pending').length;
     const confirmed = orders.filter(o => o.status === 'confirmed').length;
+    const processing = orders.filter(o => o.status === 'processing').length;
+    const ready = orders.filter(o => o.status === 'ready_to_ship').length;
+    const shipped = orders.filter(o => o.status === 'shipped').length;
     const delivered = orders.filter(o => o.status === 'delivered').length;
     const cancelled = orders.filter(o => o.status === 'cancelled').length;
 
-    // Confirmed revenue includes confirmed + delivered
     const confirmedRevenue = orders
-      .filter(o => o.status === 'confirmed' || o.status === 'delivered')
+      .filter(o =>
+        o.status === 'confirmed' ||
+        o.status === 'processing' ||
+        o.status === 'ready_to_ship' ||
+        o.status === 'shipped' ||
+        o.status === 'delivered'
+      )
       .reduce((sum, o) => sum + (Number(o.totalPrice) || 0), 0);
 
     if (kpiTotal) kpiTotal.textContent = String(total);
     if (kpiPending) kpiPending.textContent = String(pending);
-    if (kpiConfirmed) kpiConfirmed.textContent = String(confirmed);
+    if (kpiConfirmed) kpiConfirmed.textContent = String(confirmed + processing + ready);
     if (kpiDelivered) kpiDelivered.textContent = String(delivered);
     if (kpiRevenue) kpiRevenue.textContent = formatBdt(confirmedRevenue);
 
@@ -475,6 +504,9 @@
     if (countAll) countAll.textContent = String(total);
     if (countPending) countPending.textContent = String(pending);
     if (countConfirmed) countConfirmed.textContent = String(confirmed);
+    if (countProcessing) countProcessing.textContent = String(processing);
+    if (countReady) countReady.textContent = String(ready);
+    if (countShipped) countShipped.textContent = String(shipped);
     if (countDelivered) countDelivered.textContent = String(delivered);
     if (countCancelled) countCancelled.textContent = String(cancelled);
   }
@@ -537,16 +569,28 @@
     const totalPrice = Number(order.totalPrice) || (4500 + 1550 + cablePrice);
     const timeFormatted = formatDateTime(order.createdAt);
 
-    let statusBadgeText = 'অপেক্ষমান (পেন্ডিং)';
+    let statusBadgeText = 'পেন্ডিং';
     let badgeClass = 'badge-pending';
     if (status === 'confirmed') {
       statusBadgeText = 'কনফার্মড';
       badgeClass = 'badge-confirmed';
+    } else if (status === 'processing') {
+      statusBadgeText = 'প্রসেসিং';
+      badgeClass = 'badge-processing';
+    } else if (status === 'ready_to_ship') {
+      statusBadgeText = 'শিপ রেডি';
+      badgeClass = 'badge-ready';
+    } else if (status === 'shipped') {
+      statusBadgeText = 'শিপড';
+      badgeClass = 'badge-shipped';
     } else if (status === 'delivered') {
       statusBadgeText = 'ডেলিভার্ড';
       badgeClass = 'badge-delivered';
     } else if (status === 'cancelled') {
       statusBadgeText = 'বাতিল';
+      badgeClass = 'badge-cancelled';
+    } else if (status === 'returned') {
+      statusBadgeText = 'রিটার্ন';
       badgeClass = 'badge-cancelled';
     }
 
@@ -554,6 +598,8 @@
     const waConfirmMsg = encodeURIComponent(buildWaConfirmText(order));
     const telHref = 'tel:' + escapeHtml(order.phone || '');
     const waHref = 'https://wa.me/' + cleanPhone + '?text=' + waConfirmMsg;
+    const pipeline = ['pending', 'confirmed', 'processing', 'ready_to_ship', 'shipped', 'delivered'];
+    const pipeIdx = pipeline.indexOf(status);
 
     return `
       <article class="order-card status-${status}" data-id="${order.id}">
@@ -563,6 +609,10 @@
             <span class="order-time">${escapeHtml(timeFormatted)}</span>
           </div>
           <span class="status-badge ${badgeClass}">${statusBadgeText}</span>
+        </div>
+
+        <div class="order-pipeline" aria-hidden="true">
+          ${pipeline.map((s, i) => '<span class="pipe-dot' + (i <= pipeIdx && pipeIdx >= 0 ? ' is-on' : '') + '"></span>').join('<span class="pipe-line"></span>')}
         </div>
 
         <div class="order-card-body">
@@ -604,23 +654,31 @@
               <strong>সর্বমোট বিল:</strong>
               <span class="package-total-price">${formatBdt(totalPrice)}</span>
             </div>
-            ${order.confirmedAt ? `
+            ${order.courierName || order.consignmentNo ? `
               <div class="confirmed-tag">
-                ✓ কনফার্ম করা হয়েছে: ${formatDateTime(order.confirmedAt)}
+                🚚 ${escapeHtml(order.courierName || 'Courier')}
+                ${order.consignmentNo ? ' · CN: <strong>' + escapeHtml(order.consignmentNo) + '</strong>' : ''}
+                ${order.courierCharge !== '' && order.courierCharge != null ? ' · চার্জ ' + formatBdt(Number(order.courierCharge) || 0) : ''}
+              </div>
+            ` : ''}
+            ${order.steadfastTracking ? `
+              <div class="confirmed-tag steadfast-tag">
+                Steadfast Tracking: <strong>${escapeHtml(order.steadfastTracking)}</strong>
               </div>
             ` : ''}
           </div>
         </div>
 
-        ${status === 'confirmed' ? `
+        ${(status === 'confirmed' || status === 'processing' || status === 'ready_to_ship') ? `
           <div class="confirmed-handle-bar">
-            <p class="confirmed-handle-title">কনফার্মড — এখন হ্যান্ডেল করুন</p>
+            <p class="confirmed-handle-title">হ্যান্ডেল টুলস</p>
             <div class="confirmed-handle-actions">
               <a class="btn-handle-mini btn-handle-call" href="${telHref}">📞 কল</a>
               <a class="btn-handle-mini btn-handle-wa" href="${waHref}" target="_blank" rel="noopener noreferrer">💬 WhatsApp</a>
               <button type="button" class="btn-handle-mini btn-handle-copy" onclick="window.adminActions.copyAddress('${order.id}')">📋 ঠিকানা</button>
               <button type="button" class="btn-handle-mini btn-handle-print" onclick="window.adminActions.openInvoice('${order.id}')">🖨 রশিদ</button>
-              <button type="button" class="btn-handle-mini btn-handle-open" onclick="window.adminActions.openHandle('${order.id}')">⚡ ফুল হ্যান্ডেল</button>
+              <button type="button" class="btn-handle-mini btn-steadfast" onclick="window.adminActions.sendSteadfast('${order.id}')">Steadfast API</button>
+              <button type="button" class="btn-handle-mini btn-courier-manual" onclick="window.adminActions.openCourier('${order.id}')">📝 Manual Courier</button>
             </div>
           </div>
         ` : ''}
@@ -628,51 +686,47 @@
         <div class="order-card-footer">
           <div class="actions-primary">
             ${status === 'pending' ? `
-              <button type="button" class="btn-action-confirm" onclick="window.adminActions.confirmOrder('${order.id}')">
-                ✓ অর্ডার কনফার্ম করুন
-              </button>
-              <button type="button" class="btn-action-cancel" onclick="window.adminActions.cancelOrder('${order.id}')">
-                ✕ বাতিল
-              </button>
+              <button type="button" class="btn-action-confirm" onclick="window.adminActions.confirmOrder('${order.id}')">✓ Confirm Order</button>
+              <button type="button" class="btn-action-cancel" onclick="window.adminActions.cancelOrder('${order.id}')">✕ বাতিল</button>
             ` : ''}
 
             ${status === 'confirmed' ? `
-              <button type="button" class="btn-action-deliver" onclick="window.adminActions.deliverOrder('${order.id}')">
-                🚚 ডেলিভারি সম্পন্ন করুন
-              </button>
-              <button type="button" class="btn-action-pending" onclick="window.adminActions.pendingOrder('${order.id}')">
-                ↩️ আবার পেন্ডিং
-              </button>
-              <button type="button" class="btn-action-cancel" onclick="window.adminActions.cancelOrder('${order.id}')">
-                ✕ বাতিল
-              </button>
+              <button type="button" class="btn-action-confirm" onclick="window.adminActions.setStatus('${order.id}','processing')">→ Processing</button>
+              <button type="button" class="btn-action-deliver" onclick="window.adminActions.openCourier('${order.id}')">📝 Manual Courier → Ship</button>
+              <button type="button" class="btn-action-cancel" onclick="window.adminActions.cancelOrder('${order.id}')">✕ বাতিল</button>
+            ` : ''}
+
+            ${status === 'processing' ? `
+              <button type="button" class="btn-action-confirm" onclick="window.adminActions.setStatus('${order.id}','ready_to_ship')">→ Ready to Ship</button>
+              <button type="button" class="btn-action-deliver" onclick="window.adminActions.openCourier('${order.id}')">📝 Manual Courier → Ship</button>
+              <button type="button" class="btn-action-cancel" onclick="window.adminActions.cancelOrder('${order.id}')">✕ বাতিল</button>
+            ` : ''}
+
+            ${status === 'ready_to_ship' ? `
+              <button type="button" class="btn-action-deliver" onclick="window.adminActions.openCourier('${order.id}')">📝 Manual Courier → Shipped</button>
+              <button type="button" class="btn-action-confirm btn-steadfast-main" onclick="window.adminActions.sendSteadfast('${order.id}')">🚚 Steadfast API</button>
+              <button type="button" class="btn-action-cancel" onclick="window.adminActions.cancelOrder('${order.id}')">✕ বাতিল</button>
+            ` : ''}
+
+            ${status === 'shipped' ? `
+              <button type="button" class="btn-action-deliver" onclick="window.adminActions.deliverOrder('${order.id}')">✓ Delivered</button>
+              <button type="button" class="btn-action-pending" onclick="window.adminActions.openCourier('${order.id}')">✎ Courier Edit</button>
             ` : ''}
 
             ${status === 'delivered' ? `
-              <span style="color: var(--blue); font-weight: 700; font-size: 0.88rem;">✓ ডেলিভারি সম্পন্ন হয়েছে</span>
-              <button type="button" class="btn-action-pending" onclick="window.adminActions.pendingOrder('${order.id}')">
-                ↩️ পেন্ডিং
-              </button>
+              <span style="color: var(--blue); font-weight: 700; font-size: 0.88rem;">✓ ডেলিভারি সম্পন্ন</span>
             ` : ''}
 
             ${status === 'cancelled' ? `
               <span style="color: var(--rose); font-weight: 700; font-size: 0.88rem;">বাতিলকৃত অর্ডার</span>
-              <button type="button" class="btn-action-pending" onclick="window.adminActions.pendingOrder('${order.id}')">
-                ↩️ সক্রিয় করুন
-              </button>
+              <button type="button" class="btn-action-pending" onclick="window.adminActions.pendingOrder('${order.id}')">↩️ সক্রিয় করুন</button>
             ` : ''}
           </div>
 
           <div class="actions-secondary">
-            <button type="button" class="btn-action-print" onclick="window.adminActions.openEdit('${order.id}')" title="এডিট">
-              ✎ এডিট
-            </button>
-            <button type="button" class="btn-action-print" onclick="window.adminActions.openInvoice('${order.id}')" title="প্রিন্ট রশিদ">
-              🖨 রশিদ
-            </button>
-            <button type="button" class="btn-action-delete" onclick="window.adminActions.deleteOrder('${order.id}')" title="অর্ডার মুছুন">
-              🗑
-            </button>
+            <button type="button" class="btn-action-print" onclick="window.adminActions.openEdit('${order.id}')" title="এডিট">✎ এডিট</button>
+            <button type="button" class="btn-action-print" onclick="window.adminActions.openInvoice('${order.id}')" title="প্রিন্ট রশিদ">🖨 রশিদ</button>
+            <button type="button" class="btn-action-delete" onclick="window.adminActions.deleteOrder('${order.id}')" title="অর্ডার মুছুন">🗑</button>
           </div>
         </div>
       </article>
@@ -875,6 +929,65 @@
   }
 
   // ====================================================
+  // MANUAL COURIER
+  // ====================================================
+  const courierModal = document.getElementById('courier-modal');
+  const courierForm = document.getElementById('courier-form');
+  const btnCloseCourier = document.getElementById('btn-close-courier');
+
+  function closeCourierModal() {
+    if (courierModal) courierModal.hidden = true;
+  }
+
+  function openCourierModal(orderId) {
+    const order = orders.find((o) => o.id === orderId);
+    if (!order || !courierModal) return;
+    const idEl = document.getElementById('courier-order-id');
+    const meta = document.getElementById('courier-order-meta');
+    const nameEl = document.getElementById('courier-name');
+    const cnEl = document.getElementById('courier-consignment');
+    const chargeEl = document.getElementById('courier-charge');
+    const noteEl = document.getElementById('courier-note');
+    if (idEl) idEl.value = order.id;
+    if (meta) meta.textContent = '#' + order.id + ' · ' + (order.name || '');
+    if (nameEl) nameEl.value = order.courierName || (order.steadfastTracking ? 'Steadfast' : '');
+    if (cnEl) cnEl.value = order.consignmentNo || order.steadfastTracking || '';
+    if (chargeEl) chargeEl.value = order.courierCharge !== '' && order.courierCharge != null ? order.courierCharge : '';
+    if (noteEl) noteEl.value = order.shippingNote || '';
+    courierModal.hidden = false;
+  }
+
+  async function saveCourierForm(e) {
+    if (e) e.preventDefault();
+    const id = ((document.getElementById('courier-order-id') || {}).value || '').trim();
+    const courierName = ((document.getElementById('courier-name') || {}).value || '').trim();
+    const consignmentNo = ((document.getElementById('courier-consignment') || {}).value || '').trim();
+    const courierChargeRaw = ((document.getElementById('courier-charge') || {}).value || '').trim();
+    const shippingNote = ((document.getElementById('courier-note') || {}).value || '').trim();
+    if (!id || !courierName || !consignmentNo) {
+      showToast('Courier Name ও Consignment No দিন', 'error');
+      return;
+    }
+    const courierCharge = courierChargeRaw === '' ? '' : Number(courierChargeRaw) || 0;
+    closeCourierModal();
+    await updateOrderStatus(id, {
+      status: 'shipped',
+      courierName,
+      consignmentNo,
+      courierCharge,
+      shippingNote
+    });
+  }
+
+  if (btnCloseCourier) btnCloseCourier.addEventListener('click', closeCourierModal);
+  if (courierModal) {
+    courierModal.addEventListener('click', (e) => {
+      if (e.target === courierModal) closeCourierModal();
+    });
+  }
+  if (courierForm) courierForm.addEventListener('submit', saveCourierForm);
+
+  // ====================================================
   // EDIT ORDER
   // ====================================================
   const editModal = document.getElementById('edit-order-modal');
@@ -984,12 +1097,69 @@
     editCableInput.addEventListener('input', updateEditTotalPreview);
   }
 
+  async function sendOrderToSteadfast(orderId) {
+    const order = orders.find((o) => o.id === orderId);
+    if (!order) {
+      showToast('অর্ডার পাওয়া যায়নি', 'error');
+      return;
+    }
+    if (order.steadfastTracking) {
+      if (!confirm('এই অর্ডারে ইতিমধ্যে Tracking আছে: ' + order.steadfastTracking + '\nআবার পাঠাবেন?')) return;
+    } else if (!confirm('অর্ডার #' + orderId + ' Steadfast Courier-এ পাঠাবেন?')) {
+      return;
+    }
+
+    showToast('Steadfast-এ পাঠানো হচ্ছে...', 'info');
+    try {
+      if (!window.OrdersAPI || !window.OrdersAPI.sendOrderToSteadfast) {
+        throw new Error('orders-api.js আপডেট করুন');
+      }
+      if (!window.OrdersAPI.hasCloudOrdersApi()) {
+        throw new Error('আগে Order Sync URL সেট করুন');
+      }
+      const result = await window.OrdersAPI.sendOrderToSteadfast(orderId, order);
+      const tracking = (result && result.tracking) || (result.order && result.order.steadfastTracking) || '';
+      const consignmentId =
+        (result && result.consignmentId) ||
+        (result.order && result.order.steadfastConsignmentId) ||
+        '';
+
+      orders = orders.map((o) => {
+        if (o.id !== orderId) return o;
+        return Object.assign({}, o, {
+          steadfastTracking: tracking,
+          steadfastConsignmentId: consignmentId,
+          courierName: o.courierName || 'Steadfast',
+          consignmentNo: tracking || o.consignmentNo || '',
+          status:
+            o.status === 'confirmed' || o.status === 'processing' || o.status === 'ready_to_ship'
+              ? 'shipped'
+              : o.status,
+        });
+      });
+      try {
+        localStorage.setItem('ai_controller_orders', JSON.stringify(orders));
+      } catch (e) {}
+      setActiveFilter('shipped');
+      renderAll();
+      showToast(
+        tracking ? 'Steadfast OK · Tracking: ' + tracking : 'Steadfast-এ পাঠানো হয়েছে',
+        'success'
+      );
+    } catch (err) {
+      showToast('❌ ' + (err && err.message ? err.message : String(err)), 'error');
+    }
+  }
+
   // ====================================================
   // GLOBAL ADMIN ACTIONS EXPOSED
   // ====================================================
   window.adminActions = {
     confirmOrder(id) {
       updateOrderStatus(id, 'confirmed');
+    },
+    setStatus(id, status) {
+      updateOrderStatus(id, status);
     },
     deliverOrder(id) {
       updateOrderStatus(id, 'delivered');
@@ -1013,6 +1183,12 @@
     },
     openEdit(id) {
       openEditOrder(id);
+    },
+    openCourier(id) {
+      openCourierModal(id);
+    },
+    sendSteadfast(id) {
+      sendOrderToSteadfast(id);
     },
     copyAddress(id) {
       const order = orders.find(o => o.id === id);
@@ -1067,6 +1243,146 @@
       soundEnabled = !soundEnabled;
       if (soundIcon) soundIcon.textContent = soundEnabled ? '🔊' : '🔇';
       showToast(soundEnabled ? 'সাউন্ড নোটিফিকেশন চালু হয়েছে' : 'সাউন্ড নোটিফিকেশন বন্ধ করা হয়েছে', 'info');
+    });
+  }
+
+  // ====================================================
+  // CUSTOMER TEXT COMMENTS (table + delete)
+  // ====================================================
+  const USER_REVIEWS_KEY = 'ai_controller_user_reviews';
+  const HIDDEN_REVIEWS_KEY = 'ai_controller_hidden_review_ids';
+  const commentsBody = document.getElementById('comments-admin-body');
+  const commentsEmpty = document.getElementById('comments-admin-empty');
+  const btnRefreshComments = document.getElementById('btn-refresh-comments');
+  let adminComments = [];
+
+  function readLocalTextReviews() {
+    try {
+      const raw = localStorage.getItem(USER_REVIEWS_KEY);
+      const list = raw ? JSON.parse(raw) : [];
+      return Array.isArray(list) ? list.filter((r) => r && (r.comment || r.name)) : [];
+    } catch (e) {
+      return [];
+    }
+  }
+
+  function writeLocalTextReviews(list) {
+    try {
+      localStorage.setItem(USER_REVIEWS_KEY, JSON.stringify(list.slice(0, 80)));
+    } catch (e) {}
+  }
+
+  function readHiddenReviewIds() {
+    try {
+      const raw = localStorage.getItem(HIDDEN_REVIEWS_KEY);
+      const list = raw ? JSON.parse(raw) : [];
+      return Array.isArray(list) ? list.map(String) : [];
+    } catch (e) {
+      return [];
+    }
+  }
+
+  function addHiddenReviewId(id) {
+    const ids = readHiddenReviewIds();
+    if (!ids.includes(String(id))) ids.push(String(id));
+    try {
+      localStorage.setItem(HIDDEN_REVIEWS_KEY, JSON.stringify(ids));
+    } catch (e) {}
+  }
+
+  function mergeCommentLists(cloudList, localList) {
+    const map = new Map();
+    (cloudList || []).forEach((r) => {
+      if (r && r.id) map.set(String(r.id), Object.assign({ type: 'text' }, r));
+    });
+    (localList || []).forEach((r) => {
+      if (!r || !r.id) return;
+      if (!map.has(String(r.id))) map.set(String(r.id), Object.assign({ type: 'text' }, r));
+    });
+    const hidden = new Set(readHiddenReviewIds());
+    return Array.from(map.values())
+      .filter((r) => r.comment && !hidden.has(String(r.id)))
+      .sort((a, b) => String(b.createdAt || '').localeCompare(String(a.createdAt || '')));
+  }
+
+  function renderAdminComments() {
+    if (!commentsBody) return;
+    if (!adminComments.length) {
+      commentsBody.innerHTML = '';
+      if (commentsEmpty) commentsEmpty.hidden = false;
+      return;
+    }
+    if (commentsEmpty) commentsEmpty.hidden = true;
+    commentsBody.innerHTML = adminComments
+      .map((r) => {
+        const when = r.createdAt ? formatDateTime(r.createdAt) : '—';
+        return (
+          '<tr data-comment-id="' +
+          escapeHtml(r.id) +
+          '">' +
+          '<td>' +
+          escapeHtml(r.name || 'কাস্টমার') +
+          '</td>' +
+          '<td class="comment-cell">' +
+          escapeHtml(r.comment || '') +
+          '</td>' +
+          '<td>' +
+          escapeHtml(when) +
+          '</td>' +
+          '<td><button type="button" class="btn-review-delete" data-del-comment="' +
+          escapeHtml(r.id) +
+          '">🗑 ডিলিট</button></td>' +
+          '</tr>'
+        );
+      })
+      .join('');
+  }
+
+  async function fetchAdminComments() {
+    let cloud = [];
+    try {
+      if (window.OrdersAPI && window.OrdersAPI.fetchReviewsList) {
+        cloud = await window.OrdersAPI.fetchReviewsList();
+      }
+    } catch (e) {}
+    adminComments = mergeCommentLists(cloud, readLocalTextReviews());
+    renderAdminComments();
+  }
+
+  async function deleteAdminComment(id) {
+    if (!id) return;
+    if (!confirm('এই কমেন্ট মুছে ফেলবেন?')) return;
+
+    let cloudOk = false;
+    try {
+      if (window.OrdersAPI && window.OrdersAPI.hasCloudOrdersApi && window.OrdersAPI.hasCloudOrdersApi()) {
+        await window.OrdersAPI.deleteReviewRemote(id);
+        cloudOk = true;
+      }
+    } catch (err) {
+      // continue local delete
+    }
+
+    writeLocalTextReviews(readLocalTextReviews().filter((r) => String(r.id) !== String(id)));
+    addHiddenReviewId(id);
+    adminComments = adminComments.filter((r) => String(r.id) !== String(id));
+    renderAdminComments();
+    showToast(cloudOk ? 'কমেন্ট ডিলিট হয়েছে' : 'লোকাল থেকে ডিলিট হয়েছে', 'info');
+  }
+
+  if (commentsBody) {
+    commentsBody.addEventListener('click', (e) => {
+      const btn = e.target.closest('[data-del-comment]');
+      if (!btn) return;
+      deleteAdminComment(btn.getAttribute('data-del-comment'));
+    });
+  }
+  if (btnRefreshComments) {
+    btnRefreshComments.addEventListener('click', async () => {
+      btnRefreshComments.disabled = true;
+      await fetchAdminComments();
+      btnRefreshComments.disabled = false;
+      showToast('কমেন্ট রিফ্রেশ হয়েছে', 'success');
     });
   }
 
@@ -1227,7 +1543,7 @@
     prices: 'Pricing',
     links: 'Contact Links',
     videos: 'Videos',
-    reviews: 'Reviews',
+    reviews: 'কমেন্ট / রিভিউ',
     cloud: 'Order Sync'
   };
 
@@ -1258,6 +1574,10 @@
     document.body.classList.remove('sidebar-open');
     if (id === 'orders' || id === 'dashboard') {
       if (typeof renderAll === 'function') renderAll();
+    }
+    if (id === 'reviews') {
+      if (typeof fetchAdminComments === 'function') fetchAdminComments();
+      if (typeof fetchAdminReviews === 'function') fetchAdminReviews();
     }
   }
 
@@ -1542,6 +1862,35 @@
         showToast(msg, 'error');
       } finally {
         cloudTestBtn.disabled = false;
+      }
+    });
+  }
+
+  const btnSteadfastStatus = document.getElementById('btn-steadfast-status');
+  const steadfastStatusText = document.getElementById('steadfast-status-text');
+  if (btnSteadfastStatus) {
+    btnSteadfastStatus.addEventListener('click', async () => {
+      if (steadfastStatusText) steadfastStatusText.textContent = 'চেক হচ্ছে...';
+      btnSteadfastStatus.disabled = true;
+      try {
+        if (!window.OrdersAPI || !window.OrdersAPI.steadfastConfigured) {
+          throw new Error('orders-api.js আপডেট নেই');
+        }
+        if (!window.OrdersAPI.hasCloudOrdersApi()) {
+          throw new Error('আগে Order Sync URL সেট করুন');
+        }
+        const ok = await window.OrdersAPI.steadfastConfigured();
+        const msg = ok
+          ? '✅ Steadfast API Key সেট আছে — কনফার্মড অর্ডারে পাঠাতে পারবেন'
+          : '❌ API Key সেট নেই — Apps Script এ setSteadfastCredentials Run করুন';
+        if (steadfastStatusText) steadfastStatusText.textContent = msg;
+        showToast(msg, ok ? 'success' : 'error');
+      } catch (err) {
+        const msg = '❌ ' + (err && err.message ? err.message : String(err));
+        if (steadfastStatusText) steadfastStatusText.textContent = msg;
+        showToast(msg, 'error');
+      } finally {
+        btnSteadfastStatus.disabled = false;
       }
     });
   }

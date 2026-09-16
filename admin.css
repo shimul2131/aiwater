@@ -586,6 +586,21 @@ button {
   color: #065f46;
 }
 
+.badge-processing {
+  background: #e0e7ff;
+  color: #3730a3;
+}
+
+.badge-ready {
+  background: #ffedd5;
+  color: #c2410c;
+}
+
+.badge-shipped {
+  background: #cffafe;
+  color: #0e7490;
+}
+
 .badge-delivered {
   background: #dbeafe;
   color: #1e40af;
@@ -594,6 +609,36 @@ button {
 .badge-cancelled {
   background: #fee2e2;
   color: #991b1b;
+}
+
+.order-pipeline {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  padding: 0 0.25rem 0.85rem;
+}
+.pipe-dot {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: #cbd5e1;
+  flex-shrink: 0;
+}
+.pipe-dot.is-on {
+  background: #0f766e;
+}
+.pipe-line {
+  flex: 1;
+  height: 2px;
+  background: #e2e8f0;
+}
+.pipe-dot.is-on + .pipe-line {
+  background: #99f6e4;
+}
+
+.btn-courier-manual {
+  background: #ffedd5 !important;
+  color: #c2410c !important;
 }
 
 /* Order Body Layout */
@@ -1101,6 +1146,54 @@ button {
   font-size: 0.8rem;
   color: var(--text-muted);
   margin: 0;
+}
+
+.btn-steadfast,
+.btn-steadfast-main {
+  background: #0f766e !important;
+  color: #fff !important;
+  border-color: #0f766e !important;
+}
+.steadfast-tag {
+  background: rgba(15, 118, 110, 0.12) !important;
+  color: #0f766e !important;
+}
+.steadfast-status-row {
+  display: grid;
+  gap: 0.5rem;
+  margin-top: 0.75rem;
+}
+.comments-table-wrap {
+  overflow-x: auto;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  background: #fff;
+}
+.comments-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9rem;
+}
+.comments-table th,
+.comments-table td {
+  padding: 0.7rem 0.75rem;
+  border-bottom: 1px solid #e2e8f0;
+  text-align: left;
+  vertical-align: top;
+}
+.comments-table th {
+  background: #f8fafc;
+  font-weight: 700;
+  color: #334155;
+  white-space: nowrap;
+}
+.comments-table tr:last-child td {
+  border-bottom: 0;
+}
+.comment-cell {
+  max-width: 28rem;
+  line-height: 1.45;
+  color: #0f172a;
 }
 
 .reviews-admin-grid {

@@ -11,7 +11,7 @@
     href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;500;600;700&family=Sora:wght@500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap"
     rel="stylesheet"
   />
-  <link rel="stylesheet" href="admin.css?v=18" />
+  <link rel="stylesheet" href="admin.css?v=27" />
   <link rel="stylesheet" href="pro-ui.css?v=18" />
   <link rel="stylesheet" href="admin-cms.css?v=18" />
 </head>
@@ -88,7 +88,7 @@
           </button>
           <button type="button" class="sidebar-link" data-panel="reviews">
             <span class="sidebar-ico">★</span>
-            <span>Reviews</span>
+            <span>কমেন্ট</span>
           </button>
           <button type="button" class="sidebar-link" data-panel="links">
             <span class="sidebar-ico">⛓</span>
@@ -311,7 +311,16 @@
                   পেন্ডিং (<span id="count-pending">0</span>)
                 </button>
                 <button type="button" class="filter-tab" data-filter="confirmed">
-                  কনফার্মড (<span id="count-confirmed">0</span>)
+                  কনফার্ম (<span id="count-confirmed">0</span>)
+                </button>
+                <button type="button" class="filter-tab" data-filter="processing">
+                  প্রসেসিং (<span id="count-processing">0</span>)
+                </button>
+                <button type="button" class="filter-tab" data-filter="ready_to_ship">
+                  শিপ রেডি (<span id="count-ready">0</span>)
+                </button>
+                <button type="button" class="filter-tab" data-filter="shipped">
+                  শিপড (<span id="count-shipped">0</span>)
                 </button>
                 <button type="button" class="filter-tab" data-filter="delivered">
                   ডেলিভার্ড (<span id="count-delivered">0</span>)
@@ -421,10 +430,36 @@
 
           <!-- PANEL: Reviews -->
           <div class="admin-panel" id="panel-reviews" data-panel="reviews" hidden>
+            <section class="manage-card" id="comments-admin">
+              <div class="manage-card-head">
+                <h2>কাস্টমার কমেন্ট</h2>
+                <p>ওয়েবসাইট থেকে আসা রিভিউ — টেবিল থেকে ডিলিট করতে পারবেন।</p>
+              </div>
+              <div class="comments-toolbar">
+                <button type="button" class="btn-cms-ghost" id="btn-refresh-comments">↻ রিফ্রেশ</button>
+              </div>
+              <div class="comments-table-wrap">
+                <table class="comments-table" id="comments-admin-table">
+                  <thead>
+                    <tr>
+                      <th>নাম</th>
+                      <th>কমেন্ট</th>
+                      <th>সময়</th>
+                      <th></th>
+                    </tr>
+                  </thead>
+                  <tbody id="comments-admin-body">
+                    <tr><td colspan="4">লোড হচ্ছে...</td></tr>
+                  </tbody>
+                </table>
+              </div>
+              <p class="reviews-admin-empty" id="comments-admin-empty" hidden>কোনো কমেন্ট নেই।</p>
+            </section>
+
             <section class="manage-card" id="reviews-admin">
               <div class="manage-card-head">
-                <h2>Customer reviews</h2>
-                <p>WhatsApp/Messenger screenshot upload — website e auto slideshow.</p>
+                <h2>স্ক্রিনশট রিভিউ</h2>
+                <p>WhatsApp/Messenger screenshot upload — website slideshow.</p>
               </div>
               <form class="reviews-upload-box" id="review-upload-form">
                 <label class="reviews-file-label" for="review-file-input">
@@ -477,6 +512,24 @@
                   URL সেট না করলে অর্ডার শুধু অর্ডারদাতার ফোনে থাকবে — পিসি অ্যাডমিনে আসবে না।
                 </p>
               </form>
+            </section>
+
+            <section class="manage-card" id="steadfast-setup">
+              <div class="manage-card-head">
+                <h2>Steadfast Courier</h2>
+                <p>কনফার্মড অর্ডার থেকে এক ক্লিকে কুরিয়ারে পাঠান। API Key ওয়েবসাইটে রাখা হয় না।</p>
+              </div>
+              <ol class="cloud-setup-steps">
+                <li>Steadfast Merchant পোর্টাল থেকে <b>API Key</b> ও <b>Secret Key</b> কপি করুন</li>
+                <li><code>cloud-orders.gs</code> এ <b>setSteadfastCredentials</b> ফাংশনে Key বসান</li>
+                <li>Apps Script Editor → Run → <b>setSteadfastCredentials</b></li>
+                <li>Deploy → <b>New version</b> → Deploy (Order Sync URL একই থাকতে পারে)</li>
+                <li>Orders → কনফার্মড অর্ডারে <b>Steadfast-এ পাঠান</b> চাপুন</li>
+              </ol>
+              <div class="steadfast-status-row">
+                <button type="button" class="btn-cms-ghost" id="btn-steadfast-status">Steadfast Status চেক</button>
+                <p id="steadfast-status-text" class="reviews-upload-hint" role="status"></p>
+              </div>
             </section>
           </div>
         </main>
@@ -567,6 +620,47 @@
         <button type="button" class="btn-print" onclick="window.print()">🖨 প্রিন্ট / PDF সংরক্ষণ</button>
         <button type="button" class="btn-close-modal" id="btn-close-invoice">বন্ধ করুন</button>
       </div>
+    </div>
+  </div>
+
+  <!-- Manual Courier Modal -->
+  <div class="modal-backdrop" id="courier-modal" hidden>
+    <div class="handle-panel edit-order-panel" role="dialog" aria-labelledby="courier-title">
+      <div class="handle-panel-head">
+        <div>
+          <p class="handle-eyebrow">MANUAL COURIER</p>
+          <h2 id="courier-title">কুরিয়ার তথ্য দিন</h2>
+          <p class="handle-sub" id="courier-order-meta">#—</p>
+        </div>
+        <button type="button" class="btn-close-modal" id="btn-close-courier" aria-label="বন্ধ">✕</button>
+      </div>
+      <form id="courier-form" class="manual-order-form edit-order-form">
+        <input type="hidden" id="courier-order-id" />
+        <label>
+          <span>Courier Name *</span>
+          <input type="text" id="courier-name" required placeholder="Steadfast / Pathao / RedX / অন্যান্য" list="courier-name-list" />
+          <datalist id="courier-name-list">
+            <option value="Steadfast"></option>
+            <option value="Pathao"></option>
+            <option value="RedX"></option>
+            <option value="Paperfly"></option>
+            <option value="Sundarban"></option>
+          </datalist>
+        </label>
+        <label>
+          <span>Consignment No *</span>
+          <input type="text" id="courier-consignment" required placeholder="Tracking / CN number" />
+        </label>
+        <label>
+          <span>Courier Charge (৳)</span>
+          <input type="number" id="courier-charge" min="0" step="1" placeholder="0" />
+        </label>
+        <label class="full">
+          <span>Shipping Note</span>
+          <input type="text" id="courier-note" placeholder="ঐচ্ছিক নোট" />
+        </label>
+        <button type="submit" class="btn-action-confirm">✓ সেভ করে Shipped করুন</button>
+      </form>
     </div>
   </div>
 
@@ -688,8 +782,8 @@
     </div>
   </div>
 
-  <script src="site-config.js?v=21"></script>
-  <script src="orders-api.js?v=21"></script>
-  <script src="admin.js?v=21"></script>
+  <script src="site-config.js?v=27"></script>
+  <script src="orders-api.js?v=27"></script>
+  <script src="admin.js?v=27"></script>
 </body>
 </html>
