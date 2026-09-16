@@ -195,15 +195,34 @@
     return new URL(rel, window.location.href).href;
   }
 
-  function updateOrdersApiBanner() {
+  async function updateOrdersApiBanner() {
     const banner = document.getElementById('orders-api-banner');
     const syncBox = document.getElementById('order-sync-box');
     const pcAlert = document.getElementById('pc-sync-alert');
+    const bannerText = document.getElementById('orders-api-banner-text');
     const hasCloud = window.OrdersAPI && window.OrdersAPI.hasCloudOrdersApi();
-    if (banner) banner.hidden = !!hasCloud;
-    if (syncBox) syncBox.hidden = !!hasCloud;
-    // Show PC sync alert when cloud not set (main reason PC shows 0)
-    if (pcAlert) pcAlert.hidden = !!hasCloud;
+
+    let cloudOk = false;
+    if (hasCloud && window.OrdersAPI.testCloudConnection) {
+      try {
+        const result = await window.OrdersAPI.testCloudConnection();
+        cloudOk = !!(result && result.ok);
+        if (!cloudOk && bannerText) {
+          bannerText.innerHTML =
+            'Apps Script লগইন চাইছে বা ভুল URL। Deploy → Who has access = <b>Anyone</b> (Google account ওয়ালা নয়) → New version Deploy। তারপর Admin → Order Sync → <b>Test Sync</b>।';
+        }
+      } catch (e) {
+        cloudOk = false;
+      }
+    } else if (bannerText) {
+      bannerText.innerHTML =
+        'লাইভে <code>site-config.js</code> নেই বা ordersApi খালি। GitHub-এ <code>site-config.js</code> আপলোড করুন। এখন ফোন Admin → <b>Copy JSON</b> → পিসি <b>Paste Import</b>।';
+    }
+
+    const showWarn = !cloudOk;
+    if (banner) banner.hidden = !showWarn;
+    if (syncBox) syncBox.hidden = cloudOk;
+    if (pcAlert) pcAlert.hidden = cloudOk;
   }
 
   function readLocalOrders() {
@@ -307,7 +326,7 @@
 
     previousOrderIds = new Set(fetched.map(o => o.id));
     orders = fetched;
-    updateOrdersApiBanner();
+    await updateOrdersApiBanner();
     renderAll();
   }
 

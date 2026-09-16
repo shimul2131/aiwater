@@ -246,10 +246,10 @@
 
             <div class="orders-api-banner" id="orders-api-banner" hidden>
               <strong>⚠️ পিসি অ্যাডমিনে অর্ডার আসছে না</strong>
-              <p>
-                কাস্টমার ফোনে অর্ডার দিলে সেটা <b>কাস্টমারের ফোনে</b> থাকে — আপনার পিসিতে অটো আসে না।
-                নিচে <b>Import</b> করুন, অথবা WhatsApp থেকে Manual order যোগ করুন, অথবা
-                <button type="button" class="btn-linkish" data-goto="cloud">Order Sync</button> সেট করুন।
+              <p id="orders-api-banner-text">
+                লাইভ সাইটে <code>site-config.js</code> আপলোড নেই অথবা Order Sync (Anyone) ঠিক নেই।
+                এখন: ফোনে Admin → <b>Copy JSON</b> → পিসিতে <b>Paste Import</b>।
+                স্থায়ী: Order Sync সেট + <code>site-config.js</code> GitHub-এ আপলোড।
               </p>
             </div>
 
@@ -688,8 +688,8 @@
     </div>
   </div>
 
-  <script src="site-config.js?v=18"></script>
-  <script src="orders-api.js?v=18"></script>
-  <script src="admin.js?v=18"></script>
+  <script src="site-config.js?v=20"></script>
+  <script src="orders-api.js?v=20"></script>
+  <script src="admin.js?v=20"></script>
 </body>
 </html>

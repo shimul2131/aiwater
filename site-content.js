@@ -333,10 +333,14 @@
 
       let createdOrder = null;
       let savedToCloud = false;
+      let cloudError = "";
 
       // 1. Try cloud / backend API
       try {
-        if (window.OrdersAPI) {
+        if (window.OrdersAPI && window.OrdersAPI.hasCloudOrdersApi()) {
+          createdOrder = await window.OrdersAPI.createOrderRemote(orderPayload);
+          savedToCloud = true;
+        } else if (window.OrdersAPI) {
           createdOrder = await window.OrdersAPI.createOrderRemote(orderPayload);
           savedToCloud = true;
         } else {
@@ -355,7 +359,7 @@
           }
         }
       } catch (err) {
-        // offline or static host without cloud API
+        cloudError = err && err.message ? String(err.message) : "cloud fail";
       }
 
       // 2. Fallback order object if API unavailable
@@ -394,9 +398,9 @@
       );
       const waUrl = "https://wa.me/" + getWhatsAppNumber() + "?text=" + waMsg;
 
-      // No cloud API -> admin stays empty; open WhatsApp so shop gets the order
+      // No cloud save -> open WhatsApp so shop gets the order
       const hasCloud = window.OrdersAPI && window.OrdersAPI.hasCloudOrdersApi();
-      if (!savedToCloud && !hasCloud) {
+      if (!savedToCloud) {
         try {
           window.open(waUrl, "_blank", "noopener,noreferrer");
         } catch (e) {}
@@ -428,9 +432,16 @@
         }
 
         if (hintEl) {
-          hintEl.textContent = savedToCloud
-            ? "\u0986\u09aa\u09a8\u09be\u09b0 \u0985\u09b0\u09cd\u09a1\u09be\u09b0 \u0985\u09cd\u09af\u09be\u09a1\u09ae\u09bf\u09a8 \u09aa\u09cd\u09af\u09be\u09a8\u09c7\u09b2\u09c7 \u09aa\u09cc\u0981\u099b\u09c7\u099b\u09c7\u0964 \u0986\u09ae\u09be\u09a6\u09c7\u09b0 \u09aa\u09cd\u09b0\u09a4\u09bf\u09a8\u09bf\u09a7\u09bf \u09b6\u09c0\u0998\u09cd\u09b0\u0987 \u09af\u09cb\u0997\u09be\u09af\u09cb\u0997 \u0995\u09b0\u09ac\u09c7\u0964"
-            : "\u0985\u09b0\u09cd\u09a1\u09be\u09b0 \u09a8\u09bf\u09b6\u09cd\u099a\u09bf\u09a4 \u0995\u09b0\u09a4\u09c7 \u09a8\u09bf\u099a\u09c7\u09b0 WhatsApp \u09ac\u09be\u099f\u09a8\u09c7 \u099a\u09be\u09aa\u09c1\u09a8 \u0993 Send \u0995\u09b0\u09c1\u09a8 \u2014 \u09a4\u09be\u09b9\u09b2\u09c7 \u0986\u09ae\u09b0\u09be \u09b8\u09be\u09a5\u09c7 \u09b8\u09be\u09a5\u09c7 \u09aa\u09be\u09ac\u0964";
+          if (savedToCloud) {
+            hintEl.textContent =
+              "আপনার অর্ডার অ্যাডমিন প্যানেলে পৌঁছেছে। আমাদের প্রতিনিধি শীঘ্রই যোগাযোগ করবে।";
+          } else if (hasCloud) {
+            hintEl.textContent =
+              "ক্লাউড Sync ব্যর্থ — WhatsApp খুলেছে। সেখান থেকে Send করুন যাতে অর্ডার পাই।";
+          } else {
+            hintEl.textContent =
+              "অর্ডার নিশ্চিত করতে নিচের WhatsApp বাটনে চাপুন ও Send করুন — তাহলে আমরা সাথে সাথে পাব।";
+          }
         }
 
         successCard.hidden = false;
