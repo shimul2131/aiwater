@@ -27,15 +27,16 @@
     return !!getConfiguredOrdersApi();
   }
 
-  function looksLikeLoginHtml(text) {
+  function looksLikeLoginHtml(text, finalUrl) {
+    if (finalUrl && /accounts\.google\.com/i.test(finalUrl)) return true;
     if (!text || typeof text !== "string") return false;
-    const t = text.slice(0, 800).toLowerCase();
+    const t = text.slice(0, 1200).toLowerCase();
+    // Only treat real Google login walls — not random HTML error shells
     return (
-      t.includes("<!doctype html") ||
-      t.includes("<html") ||
       t.includes("accounts.google.com") ||
-      t.includes("sign in") ||
-      t.includes("signin")
+      t.includes("sign in to continue") ||
+      t.includes("signin/identifier") ||
+      (t.includes("google") && t.includes("flowName=WebLiteSignIn".toLowerCase()))
     );
   }
 
@@ -45,9 +46,9 @@
     );
   }
 
-  async function parseJsonSafe(res) {
+  async function parseJsonFromResponse(res) {
     const text = await res.text();
-    if (looksLikeLoginHtml(text)) {
+    if (looksLikeLoginHtml(text, res.url || "")) {
       throw cloudAccessError();
     }
     try {
@@ -55,6 +56,17 @@
     } catch (e) {
       throw new Error("API JSON ফেরত দেয়নি — Deploy/URL চেক করুন");
     }
+  }
+
+  async function cloudGetList(url) {
+    const target = (url || getOrdersApiUrl()).replace(/\/$/, "");
+    const res = await fetch(target + (target.includes("?") ? "&" : "?") + "action=list&_=" + Date.now(), {
+      method: "GET",
+      cache: "no-store",
+      redirect: "follow",
+      mode: "cors",
+    });
+    return parseJsonFromResponse(res);
   }
 
   async function cloudPost(body) {
@@ -65,10 +77,9 @@
       body: JSON.stringify(body),
       redirect: "follow",
       cache: "no-store",
+      mode: "cors",
     });
-    // After redirect to Google login, status can still be 200 with HTML
-    const json = await parseJsonSafe(res);
-    return json;
+    return parseJsonFromResponse(res);
   }
 
   async function fetchOrdersList() {
@@ -76,26 +87,22 @@
     const url = getOrdersApiUrl();
 
     if (cloud) {
-      // Prefer POST list — more reliable than GET with Apps Script redirects
+      // GET first — most reliable for Apps Script Anyone web apps
       try {
-        const json = await cloudPost({ action: "list" });
+        const json = await cloudGetList(url);
         if (json && json.success && Array.isArray(json.orders)) return json.orders;
         throw new Error((json && json.error) || "cloud bad payload");
-      } catch (err) {
-        // Fallback GET (older scripts)
-        const res = await fetch(url + (url.includes("?") ? "&" : "?") + "_=" + Date.now(), {
-          method: "GET",
-          cache: "no-store",
-          redirect: "follow",
-        });
-        const json = await parseJsonSafe(res);
-        if (json && json.success && Array.isArray(json.orders)) return json.orders;
-        throw err;
+      } catch (getErr) {
+        try {
+          const json = await cloudPost({ action: "list" });
+          if (json && json.success && Array.isArray(json.orders)) return json.orders;
+        } catch (e) {}
+        throw getErr;
       }
     }
 
     const res = await fetch(url, { cache: "no-store" });
-    const json = await parseJsonSafe(res);
+    const json = await parseJsonFromResponse(res);
     if (json && json.success && Array.isArray(json.orders)) return json.orders;
     throw new Error("api bad payload");
   }
@@ -115,14 +122,13 @@
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(orderPayload),
     });
-    const json = await parseJsonSafe(res);
+    const json = await parseJsonFromResponse(res);
     if (json && json.success && json.order) return json.order;
     throw new Error("api create bad payload");
   }
 
   async function updateOrderRemote(orderId, nextStatusOrPatch) {
     const cloud = isCloudOrdersApi();
-    const url = getOrdersApiUrl();
     const patch =
       typeof nextStatusOrPatch === "string"
         ? { status: nextStatusOrPatch }
@@ -139,7 +145,7 @@
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(patch),
     });
-    const json = await parseJsonSafe(res);
+    const json = await parseJsonFromResponse(res);
     if (json && json.success) return json.order || true;
     throw new Error("api update bad");
   }
@@ -163,28 +169,39 @@
     if (!configured) {
       return { ok: false, message: "আগে ordersApi URL বসান" };
     }
+    const base = configured.replace(/\/$/, "");
     try {
-      const res = await fetch(configured.replace(/\/$/, ""), {
-        method: "POST",
-        headers: { "Content-Type": "text/plain;charset=utf-8" },
-        body: JSON.stringify({ action: "list" }),
-        redirect: "follow",
-        cache: "no-store",
-      });
-      const text = await res.text();
-      if (looksLikeLoginHtml(text) || /accounts\.google\.com/i.test(res.url || "")) {
-        return {
-          ok: false,
-          message:
-            "❌ লগইন পেজ আসছে। Deploy-এ Who has access = Anyone দিন (Google account ওয়ালা নয়), তারপর New version → Deploy।",
-        };
-      }
-      let json;
+      // Prefer GET — same path website uses to load orders
+      let json = null;
       try {
-        json = JSON.parse(text);
-      } catch (e) {
-        return { ok: false, message: "❌ JSON আসেনি। /exec URL ও Web app Deploy ঠিক আছে কি?" };
+        json = await cloudGetList(base);
+      } catch (getErr) {
+        const res = await fetch(base, {
+          method: "POST",
+          headers: { "Content-Type": "text/plain;charset=utf-8" },
+          body: JSON.stringify({ action: "list" }),
+          redirect: "follow",
+          cache: "no-store",
+          mode: "cors",
+        });
+        const text = await res.text();
+        if (looksLikeLoginHtml(text, res.url || "")) {
+          return {
+            ok: false,
+            message:
+              "❌ লগইন পেজ আসছে। Deploy-এ Who has access = Anyone দিন (Google account ওয়ালা নয়), তারপর New version → Deploy।",
+          };
+        }
+        try {
+          json = JSON.parse(text);
+        } catch (e) {
+          return {
+            ok: false,
+            message: "❌ " + (getErr && getErr.message ? getErr.message : "JSON আসেনি"),
+          };
+        }
       }
+
       if (json && json.success && Array.isArray(json.orders)) {
         return {
           ok: true,

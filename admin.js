@@ -203,20 +203,25 @@
     const hasCloud = window.OrdersAPI && window.OrdersAPI.hasCloudOrdersApi();
 
     let cloudOk = false;
+    let failMsg = "";
     if (hasCloud && window.OrdersAPI.testCloudConnection) {
       try {
         const result = await window.OrdersAPI.testCloudConnection();
         cloudOk = !!(result && result.ok);
-        if (!cloudOk && bannerText) {
-          bannerText.innerHTML =
-            'Apps Script লগইন চাইছে বা ভুল URL। Deploy → Who has access = <b>Anyone</b> (Google account ওয়ালা নয়) → New version Deploy। তারপর Admin → Order Sync → <b>Test Sync</b>।';
-        }
+        if (!cloudOk) failMsg = (result && result.message) || "";
       } catch (e) {
         cloudOk = false;
+        failMsg = e && e.message ? e.message : String(e);
       }
-    } else if (bannerText) {
-      bannerText.innerHTML =
+    } else {
+      failMsg =
         'লাইভে <code>site-config.js</code> নেই বা ordersApi খালি। GitHub-এ <code>site-config.js</code> আপলোড করুন। এখন ফোন Admin → <b>Copy JSON</b> → পিসি <b>Paste Import</b>।';
+    }
+
+    if (!cloudOk && bannerText) {
+      bannerText.innerHTML =
+        failMsg ||
+        'ক্লাউড Sync ব্যর্থ। Order Sync → <b>Test Sync</b> চাপুন। পুরনো অর্ডার: ফোন <b>Copy JSON</b> → পিসি <b>Paste Import</b>।';
     }
 
     const showWarn = !cloudOk;
