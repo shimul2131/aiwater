@@ -5,10 +5,9 @@
  * 1) https://script.google.com → New project
  * 2) এই পুরো কোড পেস্ট করুন → Save
  * 3) Run → setup → Allow
- * 4) Steadfast API Key সেট:
- *    নিচের setSteadfastCredentials ফাংশনে Key/Secret বসান → Run
- * 5) Deploy → Web app → Anyone → Deploy → /exec URL কপি
- * 6) Admin → Order Sync এ URL → Test Sync → site-config.js আপলোড
+ * 4) Deploy → Web app → Anyone → Deploy → /exec URL কপি
+ * 5) Admin → Order Sync এ URL → Test Sync → site-config.js আপলোড
+ * 6) Admin → Steadfast → API Key + Secret Key সেভ
  *
  * কোড বদলালে: Manage deployments → New version → Deploy
  */
@@ -21,20 +20,35 @@ function setup() {
 }
 
 /**
- * Steadfast API Key এখানে বসান, তারপর Editor থেকে একবার Run করুন।
- * (ওয়েবসাইটে Key রাখা যাবে না — এখানেই সিকিউর থাকবে)
+ * Optional fallback: Editor থেকে Key সেট করতে চাইলে এখানে বসিয়ে Run করুন।
+ * Preferred: Admin panel → Steadfast → Save API Keys
  */
 function setSteadfastCredentials() {
   var API_KEY = 'YOUR_STEADFAST_API_KEY';
   var SECRET_KEY = 'YOUR_STEADFAST_SECRET_KEY';
   if (API_KEY.indexOf('YOUR_') === 0 || SECRET_KEY.indexOf('YOUR_') === 0) {
-    throw new Error('আগে API_KEY ও SECRET_KEY বসিয়ে আবার Run করুন');
+    throw new Error('Use Admin panel Steadfast form, or put keys here and Run again');
   }
   PropertiesService.getScriptProperties().setProperties({
     STEADFAST_API_KEY: String(API_KEY).trim(),
     STEADFAST_SECRET_KEY: String(SECRET_KEY).trim()
   });
   Logger.log('Steadfast credentials saved');
+}
+
+function saveSteadfastKeys_(apiKey, secretKey) {
+  apiKey = String(apiKey || '').trim();
+  secretKey = String(secretKey || '').trim();
+  if (!apiKey || !secretKey) {
+    throw new Error('API Key and Secret Key are required');
+  }
+  if (apiKey.indexOf('YOUR_') === 0 || secretKey.indexOf('YOUR_') === 0) {
+    throw new Error('Replace placeholder keys with real Steadfast keys');
+  }
+  PropertiesService.getScriptProperties().setProperties({
+    STEADFAST_API_KEY: apiKey,
+    STEADFAST_SECRET_KEY: secretKey
+  });
 }
 
 function steadfastStatus() {
@@ -261,7 +275,11 @@ function doPost(e) {
         status: body.status || 'pending',
         confirmedAt: body.confirmedAt || '',
         steadfastTracking: '',
-        steadfastConsignmentId: ''
+        steadfastConsignmentId: '',
+        courierName: '',
+        consignmentNo: '',
+        courierCharge: '',
+        shippingNote: ''
       };
       sheet.appendRow(orderToRow_(order));
       return jsonOut_({ success: true, order: order, message: 'অর্ডার সেভ হয়েছে' });
@@ -348,6 +366,19 @@ function doPost(e) {
       });
     }
 
+    if (action === 'setSteadfastCredentials') {
+      try {
+        saveSteadfastKeys_(body.apiKey, body.secretKey);
+      } catch (credErr) {
+        return jsonOut_({ success: false, error: String(credErr.message || credErr) });
+      }
+      return jsonOut_({
+        success: true,
+        configured: true,
+        message: 'Steadfast API keys saved securely on server'
+      });
+    }
+
     if (action === 'sendSteadfast') {
       var sfProps = PropertiesService.getScriptProperties();
       var apiKey = sfProps.getProperty('STEADFAST_API_KEY');
@@ -355,7 +386,7 @@ function doPost(e) {
       if (!apiKey || !secretKey) {
         return jsonOut_({
           success: false,
-          error: 'Steadfast API Key সেট নেই। Apps Script এ setSteadfastCredentials Run করুন।'
+          error: 'Steadfast API Key not set. Open Admin → Order Sync → Steadfast and save keys.'
         });
       }
 

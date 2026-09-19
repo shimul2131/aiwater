@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="bn">
+<html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -8,22 +8,22 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link
-    href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;500;600;700&family=Sora:wght@500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap"
+    href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;500;600;700&family=Sora:wght@500;600;700;800&display=swap"
     rel="stylesheet"
   />
-  <link rel="stylesheet" href="admin.css?v=27" />
+  <link rel="stylesheet" href="admin.css?v=30" />
   <link rel="stylesheet" href="pro-ui.css?v=18" />
-  <link rel="stylesheet" href="admin-cms.css?v=18" />
+  <link rel="stylesheet" href="admin-cms.css?v=30" />
 </head>
 <body>
   <!-- Login Screen -->
   <div class="login-wrapper" id="login-screen">
     <div class="login-card">
       <div class="login-header">
-        <img src="assets/app_icon.png" alt="Logo" class="login-logo" />
+        <img src="assets/app_icon.png" alt="FR Engineering" class="login-logo" />
         <p class="login-kicker">FR Engineering</p>
         <h2>Admin Console</h2>
-        <p>Secure access for orders, pricing & site content</p>
+        <p>Orders · Pricing · Website control</p>
       </div>
 
       <form id="login-form">
@@ -33,14 +33,14 @@
             <input
               type="password"
               id="admin-pass"
-              placeholder="পাসওয়ার্ড লিখুন..."
+              placeholder="Enter password..."
               required
               autocomplete="current-password"
             />
           </div>
         </div>
 
-        <p class="login-error" id="login-error" hidden>❌ ভুল পাসওয়ার্ড! আবার চেষ্টা করুন।</p>
+        <p class="login-error" id="login-error" hidden>Wrong password. Please try again.</p>
 
         <button type="submit" class="btn-login" id="btn-login">
           Sign in
@@ -48,7 +48,7 @@
       </form>
 
       <div class="login-footer">
-        <a href="index.html">← মূল ওয়েবসাইট-এ ফিরে যান</a>
+        <a href="index.html">← Back to website</a>
       </div>
     </div>
   </div>
@@ -61,19 +61,19 @@
           <img src="assets/app_icon.png" alt="" />
           <div>
             <strong>aicontroller.store</strong>
-            <span>Website Admin</span>
+            <span>Ops Console</span>
           </div>
         </div>
 
         <nav class="sidebar-nav" id="sidebar-nav" aria-label="Admin menu">
           <p class="sidebar-label">Main</p>
           <button type="button" class="sidebar-link is-active" data-panel="dashboard">
-            <span class="sidebar-ico">⌂</span>
+            <span class="sidebar-ico">◆</span>
             <span>Dashboard</span>
           </button>
           <button type="button" class="sidebar-link" data-panel="orders">
-            <span class="sidebar-ico">☰</span>
-            <span>অর্ডার ম্যানেজ</span>
+            <span class="sidebar-ico">▣</span>
+            <span>Orders</span>
             <span class="sidebar-badge" id="sidebar-pending-count" hidden>0</span>
           </button>
 
@@ -88,10 +88,10 @@
           </button>
           <button type="button" class="sidebar-link" data-panel="reviews">
             <span class="sidebar-ico">★</span>
-            <span>কমেন্ট</span>
+            <span>Comments</span>
           </button>
           <button type="button" class="sidebar-link" data-panel="links">
-            <span class="sidebar-ico">⛓</span>
+            <span class="sidebar-ico">◎</span>
             <span>Contact Links</span>
           </button>
 
@@ -143,7 +143,7 @@
             <section class="cms-hero">
               <div>
                 <h2>Welcome back</h2>
-                <p>aicontroller.store website control panel — orders, pricing & content in one place.</p>
+                <p>FR Engineering ops console — manage orders, courier, pricing & site content.</p>
               </div>
               <div class="cms-hero-actions">
                 <button type="button" class="btn-cms-primary" data-goto="orders">Manage orders</button>
@@ -153,18 +153,18 @@
 
             <section class="pc-sync-alert" id="pc-sync-alert" hidden>
               <div class="pc-sync-alert-inner">
-                <strong>ফোনে অর্ডার আছে, পিসিতে দেখাচ্ছে না?</strong>
+                <strong>Orders on phone, not on PC?</strong>
                 <p>
-                  এটা বাগ না। অর্ডার এখন <b>শুধু সেই ফোন/ব্রাউজারে</b> সেভ হয়।
-                  পিসি আলাদা ডিভাইস বলে এখানে <b>০</b> দেখায়।
+                  Note: Not a bug. Orders save only on that phone/browser.
+                  PC is a different device, so you may see <b>0</b> here.
                 </p>
                 <ol class="pc-sync-steps">
-                  <li><b>দ্রুত উপায়:</b> কাস্টমার WhatsApp মেসেজ পাঠালে সেখান থেকে নিচে <b>Orders → Manual order</b> যোগ করুন</li>
-                  <li><b>অথবা:</b> যে ফোনে অর্ডার দেখা যায় সেখানে Admin → Orders → <b>Copy JSON</b> → পিসিতে <b>Paste Import</b></li>
-                  <li><b>স্থায়ী সমাধান:</b> Left menu → <b>Order Sync</b> এ Google Apps Script URL সেট করুন</li>
+                  <li><b>Quick:</b> From customer WhatsApp → add via <b>Orders → Manual order</b></li>
+                  <li><b>Or:</b> On the phone with orders: Admin → Orders → <b>Copy JSON</b> → on PC <b>Paste Import</b></li>
+                  <li><b>Permanent:</b> Left menu → <b>Order Sync</b> → set Google Apps Script URL</li>
                 </ol>
                 <div class="pc-sync-alert-actions">
-                  <button type="button" class="btn-cms-primary" data-goto="cloud">Order Sync সেটআপ</button>
+                  <button type="button" class="btn-cms-primary" data-goto="cloud">Order Sync setup</button>
                   <button type="button" class="btn-cms-ghost" data-goto="orders">Orders / Import</button>
                 </div>
               </div>
@@ -199,7 +199,7 @@
               <div class="stat-card stat-revenue">
                 <div class="stat-info">
                   <span class="stat-label">Sales</span>
-                  <strong class="stat-value" id="kpi-revenue">৳০</strong>
+                  <strong class="stat-value" id="kpi-revenue">৳0</strong>
                 </div>
               </div>
             </section>
@@ -235,69 +235,69 @@
           <div class="admin-panel" id="panel-orders" data-panel="orders" hidden>
             <section class="orders-manage-head">
               <div>
-                <h2>অর্ডার ম্যানেজ</h2>
-                <p>পেন্ডিং কনফার্ম → কল/WhatsApp → ডেলিভারি সম্পন্ন</p>
+                <h2>Manage Orders</h2>
+                <p>Pending → Confirm → Call/WhatsApp → Delivered</p>
               </div>
               <div class="orders-manage-actions">
-                <button type="button" class="btn-cms-ghost" id="btn-refresh-orders">↻ রিফ্রেশ</button>
+                <button type="button" class="btn-cms-ghost" id="btn-refresh-orders">↻ Refresh</button>
                 <button type="button" class="btn-cms-primary" data-goto="cloud">Order Sync</button>
               </div>
             </section>
 
             <div class="orders-api-banner" id="orders-api-banner" hidden>
-              <strong>⚠️ পিসি অ্যাডমিনে অর্ডার আসছে না</strong>
+              <strong>⚠️ Orders not showing on PC admin</strong>
               <p id="orders-api-banner-text">
-                লাইভ সাইটে <code>site-config.js</code> আপলোড নেই অথবা Order Sync (Anyone) ঠিক নেই।
-                এখন: ফোনে Admin → <b>Copy JSON</b> → পিসিতে <b>Paste Import</b>।
-                স্থায়ী: Order Sync সেট + <code>site-config.js</code> GitHub-এ আপলোড।
+                Live site missing <code>site-config.js</code> or Order Sync (Anyone) is not set.
+                Now: phone Admin → <b>Copy JSON</b> → PC <b>Paste Import</b>.
+                Permanent: set Order Sync + upload <code>site-config.js</code> to GitHub.
               </p>
             </div>
 
             <section class="order-sync-box" id="order-sync-box">
               <div class="order-sync-head">
-                <strong>ফোন → পিসি অর্ডার আনুন</strong>
-                <p>১) ফোনে Admin খুলে Copy JSON → ২) এখানে Paste Import</p>
+                <strong>Phone → PC order transfer</strong>
+                <p>1) On phone Admin → Copy JSON → 2) Paste Import here</p>
               </div>
               <div class="order-sync-actions">
-                <button type="button" class="btn-sync-export" id="btn-export-orders">Export (ফোন)</button>
-                <button type="button" class="btn-sync-copy" id="btn-copy-orders-json">Copy JSON (ফোন)</button>
+                <button type="button" class="btn-sync-export" id="btn-export-orders">Export (phone)</button>
+                <button type="button" class="btn-sync-copy" id="btn-copy-orders-json">Copy JSON (phone)</button>
                 <label class="btn-sync-import">
-                  Import (পিসি)
+                  Import (PC)
                   <input type="file" id="import-orders-file" accept="application/json,.json,text/plain" hidden />
                 </label>
               </div>
               <details class="order-sync-paste">
-                <summary>পিসিতে JSON পেস্ট করে Import</summary>
-                <textarea id="import-orders-text" rows="4" placeholder='ফোন থেকে Copy করা JSON এখানে পেস্ট করুন...'></textarea>
-                <button type="button" class="btn-action-confirm" id="btn-import-orders-text">✓ Paste Import (পিসি)</button>
+                <summary>Paste JSON on PC to Import</summary>
+                <textarea id="import-orders-text" rows="4" placeholder='Paste JSON copied from phone...'></textarea>
+                <button type="button" class="btn-action-confirm" id="btn-import-orders-text">✓ Paste Import (PC)</button>
               </details>
             </section>
 
             <section class="manual-order-section" id="manual-order-section">
               <details>
-                <summary>＋ ম্যানুয়াল অর্ডার যোগ (WhatsApp থেকে)</summary>
+                <summary>+ Add manual order (from WhatsApp)</summary>
                 <form class="manual-order-form" id="manual-order-form">
                   <label>
-                    <span>নাম *</span>
-                    <input type="text" id="manual-name" required placeholder="গ্রাহকের নাম" />
+                    <span>Name *</span>
+                    <input type="text" id="manual-name" required placeholder="Customer name" />
                   </label>
                   <label>
-                    <span>মোবাইল *</span>
+                    <span>Mobile *</span>
                     <input type="tel" id="manual-phone" required placeholder="01XXXXXXXXX" />
                   </label>
                   <label class="full">
-                    <span>ঠিকানা *</span>
-                    <input type="text" id="manual-address" required placeholder="সম্পূর্ণ ঠিকানা" />
+                    <span>Address *</span>
+                    <input type="text" id="manual-address" required placeholder="Full address" />
                   </label>
                   <label>
-                    <span>Cable (ফুট) *</span>
-                    <input type="number" id="manual-cable" min="1" max="500" required placeholder="যেমন: 30" />
+                    <span>Cable (ft) *</span>
+                    <input type="number" id="manual-cable" min="1" max="500" required placeholder="e.g. 30" />
                   </label>
                   <label class="full">
-                    <span>নোট</span>
-                    <input type="text" id="manual-note" placeholder="ঐচ্ছিক" />
+                    <span>Note</span>
+                    <input type="text" id="manual-note" placeholder="Optional" />
                   </label>
-                  <button type="submit" class="btn-action-confirm">✓ অর্ডার যোগ করুন</button>
+                  <button type="submit" class="btn-action-confirm">✓ Add order</button>
                 </form>
               </details>
             </section>
@@ -305,33 +305,33 @@
             <section class="toolbar-section">
               <div class="filter-tabs" id="filter-tabs">
                 <button type="button" class="filter-tab is-active" data-filter="all">
-                  সব (<span id="count-all">0</span>)
+                  All (<span id="count-all">0</span>)
                 </button>
                 <button type="button" class="filter-tab" data-filter="pending">
-                  পেন্ডিং (<span id="count-pending">0</span>)
+                  Pending (<span id="count-pending">0</span>)
                 </button>
                 <button type="button" class="filter-tab" data-filter="confirmed">
-                  কনফার্ম (<span id="count-confirmed">0</span>)
+                  Confirmed (<span id="count-confirmed">0</span>)
                 </button>
                 <button type="button" class="filter-tab" data-filter="processing">
-                  প্রসেসিং (<span id="count-processing">0</span>)
+                  Processing (<span id="count-processing">0</span>)
                 </button>
                 <button type="button" class="filter-tab" data-filter="ready_to_ship">
-                  শিপ রেডি (<span id="count-ready">0</span>)
+                  Ship ready (<span id="count-ready">0</span>)
                 </button>
                 <button type="button" class="filter-tab" data-filter="shipped">
-                  শিপড (<span id="count-shipped">0</span>)
+                  Shipped (<span id="count-shipped">0</span>)
                 </button>
                 <button type="button" class="filter-tab" data-filter="delivered">
-                  ডেলিভার্ড (<span id="count-delivered">0</span>)
+                  Delivered (<span id="count-delivered">0</span>)
                 </button>
                 <button type="button" class="filter-tab" data-filter="cancelled">
-                  বাতিল (<span id="count-cancelled">0</span>)
+                  Cancelled (<span id="count-cancelled">0</span>)
                 </button>
               </div>
               <div class="search-box">
                 <span class="search-icon">🔍</span>
-                <input type="search" id="order-search" placeholder="নাম, মোবাইল বা অর্ডার ID..." aria-label="Search orders" />
+                <input type="search" id="order-search" placeholder="Name, mobile or order ID..." aria-label="Search orders" />
                 <button type="button" class="btn-clear-search" id="btn-clear-search" hidden aria-label="Clear">✕</button>
               </div>
             </section>
@@ -339,8 +339,8 @@
             <section class="orders-section">
               <div class="empty-state" id="orders-empty" hidden>
                 <div class="empty-icon">📭</div>
-                <h3>কোনো অর্ডার নেই</h3>
-                <p id="empty-message">ওয়েবসাইট থেকে অর্ডার এলে এখানে দেখাবে।</p>
+                <h3>No orders</h3>
+                <p id="empty-message">Orders from the website will appear here.</p>
               </div>
               <div class="orders-grid" id="orders-grid"></div>
             </section>
@@ -432,33 +432,33 @@
           <div class="admin-panel" id="panel-reviews" data-panel="reviews" hidden>
             <section class="manage-card" id="comments-admin">
               <div class="manage-card-head">
-                <h2>কাস্টমার কমেন্ট</h2>
-                <p>ওয়েবসাইট থেকে আসা রিভিউ — টেবিল থেকে ডিলিট করতে পারবেন।</p>
+                <h2>Customer comments</h2>
+                <p>Reviews from the website — you can delete from this table.</p>
               </div>
               <div class="comments-toolbar">
-                <button type="button" class="btn-cms-ghost" id="btn-refresh-comments">↻ রিফ্রেশ</button>
+                <button type="button" class="btn-cms-ghost" id="btn-refresh-comments">↻ Refresh</button>
               </div>
               <div class="comments-table-wrap">
                 <table class="comments-table" id="comments-admin-table">
                   <thead>
                     <tr>
-                      <th>নাম</th>
-                      <th>কমেন্ট</th>
-                      <th>সময়</th>
+                      <th>Name</th>
+                      <th>Comment</th>
+                      <th>Time</th>
                       <th></th>
                     </tr>
                   </thead>
                   <tbody id="comments-admin-body">
-                    <tr><td colspan="4">লোড হচ্ছে...</td></tr>
+                    <tr><td colspan="4">Loading...</td></tr>
                   </tbody>
                 </table>
               </div>
-              <p class="reviews-admin-empty" id="comments-admin-empty" hidden>কোনো কমেন্ট নেই।</p>
+              <p class="reviews-admin-empty" id="comments-admin-empty" hidden>No comments yet.</p>
             </section>
 
             <section class="manage-card" id="reviews-admin">
               <div class="manage-card-head">
-                <h2>স্ক্রিনশট রিভিউ</h2>
+                <h2>Screenshot reviews</h2>
                 <p>WhatsApp/Messenger screenshot upload — website slideshow.</p>
               </div>
               <form class="reviews-upload-box" id="review-upload-form">
@@ -483,19 +483,19 @@
           <div class="admin-panel" id="panel-cloud" data-panel="cloud" hidden>
             <section class="manage-card">
               <div class="manage-card-head">
-                <h2>Order Sync (ফোন + পিসি এক করা)</h2>
-                <p>একবার সেটআপ করলে কাস্টমার ওয়েবসাইটে অর্ডার দিলে <b>পিসি অ্যাডমিনেও</b> দেখা যাবে।</p>
+                <h2>Order Sync (phone + PC)</h2>
+                <p>Once set up, website orders also show in <b>PC admin</b>.</p>
               </div>
 
               <ol class="cloud-setup-steps">
-                <li>কম্পিউটারে <code>cloud-orders.gs</code> ফাইল খুলুন → সব কোড কপি করুন</li>
-                <li><a href="https://script.google.com" target="_blank" rel="noopener noreferrer">script.google.com</a> → New project → কোড পেস্ট → Save</li>
-                <li>Run → <b>setup</b> → Allow (একবার অনুমতি দিন)</li>
+                <li>Open <code>cloud-orders.gs</code> on your computer → copy all code</li>
+                <li><a href="https://script.google.com" target="_blank" rel="noopener noreferrer">script.google.com</a> → New project → paste code → Save</li>
+                <li>Run → <b>setup</b> → Allow (one-time permission)</li>
                 <li>Deploy → New deployment → Type: <b>Web app</b></li>
                 <li>Execute as: <b>Me</b> · Who has access: <b>Anyone</b> → Deploy
-                  <br /><small style="color:#b45309">⚠️ "Anyone with a Google account" দিলে Sync কাজ করবে না (লগইন পেজ আসবে)</small>
+                  <br /><small style="color:#b45309">⚠️ Note: "Anyone with a Google account" will break Sync (login page)</small>
                 </li>
-                <li>Web app URL (<code>/exec</code>) নিচে পেস্ট → <b>Test Sync</b> → সবুজ হলে Save → <code>site-config.js</code> আপলোড</li>
+                <li>Paste Web app URL (<code>/exec</code>) below → <b>Test Sync</b> → if green, Save → upload <code>site-config.js</code></li>
               </ol>
 
               <form class="manage-form" id="cloud-admin-form">
@@ -509,7 +509,7 @@
                 </div>
                 <p id="cloud-test-result" class="reviews-upload-hint" role="status" aria-live="polite"></p>
                 <p class="reviews-upload-hint">
-                  URL সেট না করলে অর্ডার শুধু অর্ডারদাতার ফোনে থাকবে — পিসি অ্যাডমিনে আসবে না।
+                  Note: Without URL, orders stay only on the customer's phone — not on PC admin.
                 </p>
               </form>
             </section>
@@ -517,25 +517,35 @@
             <section class="manage-card" id="steadfast-setup">
               <div class="manage-card-head">
                 <h2>Steadfast Courier</h2>
-                <p>কনফার্মড অর্ডার থেকে এক ক্লিকে কুরিয়ারে পাঠান। API Key ওয়েবসাইটে রাখা হয় না।</p>
+                <p>Send confirmed orders in one click. Keys save on Google Apps Script only — not in the website files.</p>
               </div>
               <ol class="cloud-setup-steps">
-                <li>Steadfast Merchant পোর্টাল থেকে <b>API Key</b> ও <b>Secret Key</b> কপি করুন</li>
-                <li><code>cloud-orders.gs</code> এ <b>setSteadfastCredentials</b> ফাংশনে Key বসান</li>
-                <li>Apps Script Editor → Run → <b>setSteadfastCredentials</b></li>
-                <li>Deploy → <b>New version</b> → Deploy (Order Sync URL একই থাকতে পারে)</li>
-                <li>Orders → কনফার্মড অর্ডারে <b>Steadfast-এ পাঠান</b> চাপুন</li>
+                <li>Copy <b>API Key</b> & <b>Secret Key</b> from Steadfast Merchant portal</li>
+                <li>Paste below → <b>Save API Keys</b></li>
+                <li>Orders → confirmed order → <b>Steadfast API</b></li>
               </ol>
-              <div class="steadfast-status-row">
-                <button type="button" class="btn-cms-ghost" id="btn-steadfast-status">Steadfast Status চেক</button>
+              <form class="manage-form" id="steadfast-keys-form">
+                <label class="full">
+                  <span>API Key *</span>
+                  <input type="password" id="steadfast-api-key" autocomplete="off" required placeholder="Steadfast API Key" />
+                </label>
+                <label class="full">
+                  <span>Secret Key *</span>
+                  <input type="password" id="steadfast-secret-key" autocomplete="off" required placeholder="Steadfast Secret Key" />
+                </label>
+                <div class="steadfast-status-row">
+                  <button type="submit" class="btn-cms-primary" id="btn-steadfast-save">Save API Keys</button>
+                  <button type="button" class="btn-cms-ghost" id="btn-steadfast-status">Check Status</button>
+                </div>
                 <p id="steadfast-status-text" class="reviews-upload-hint" role="status"></p>
-              </div>
+                <p class="reviews-upload-hint">Note: Keys are never shown again after save. Re-enter only if you need to update.</p>
+              </form>
             </section>
           </div>
         </main>
 
         <footer class="admin-footer">
-          <p>AI Water Controller Admin · FR Engineering Solutions</p>
+          <p>AI Water Controller · FR Engineering Solutions · Ops Console</p>
         </footer>
       </div>
     </div>
@@ -617,8 +627,8 @@
       </div>
 
       <div class="invoice-actions no-print">
-        <button type="button" class="btn-print" onclick="window.print()">🖨 প্রিন্ট / PDF সংরক্ষণ</button>
-        <button type="button" class="btn-close-modal" id="btn-close-invoice">বন্ধ করুন</button>
+        <button type="button" class="btn-print" onclick="window.print()">🖨 Print / Save PDF</button>
+        <button type="button" class="btn-close-modal" id="btn-close-invoice">Close</button>
       </div>
     </div>
   </div>
@@ -629,16 +639,16 @@
       <div class="handle-panel-head">
         <div>
           <p class="handle-eyebrow">MANUAL COURIER</p>
-          <h2 id="courier-title">কুরিয়ার তথ্য দিন</h2>
+          <h2 id="courier-title">Enter courier details</h2>
           <p class="handle-sub" id="courier-order-meta">#—</p>
         </div>
-        <button type="button" class="btn-close-modal" id="btn-close-courier" aria-label="বন্ধ">✕</button>
+        <button type="button" class="btn-close-modal" id="btn-close-courier" aria-label="Close">✕</button>
       </div>
       <form id="courier-form" class="manual-order-form edit-order-form">
         <input type="hidden" id="courier-order-id" />
         <label>
           <span>Courier Name *</span>
-          <input type="text" id="courier-name" required placeholder="Steadfast / Pathao / RedX / অন্যান্য" list="courier-name-list" />
+          <input type="text" id="courier-name" required placeholder="Steadfast / Pathao / RedX / Other" list="courier-name-list" />
           <datalist id="courier-name-list">
             <option value="Steadfast"></option>
             <option value="Pathao"></option>
@@ -657,9 +667,9 @@
         </label>
         <label class="full">
           <span>Shipping Note</span>
-          <input type="text" id="courier-note" placeholder="ঐচ্ছিক নোট" />
+          <input type="text" id="courier-note" placeholder="Optional note" />
         </label>
-        <button type="submit" class="btn-action-confirm">✓ সেভ করে Shipped করুন</button>
+        <button type="submit" class="btn-action-confirm">✓ Save & mark Shipped</button>
       </form>
     </div>
   </div>
@@ -669,36 +679,36 @@
     <div class="handle-panel edit-order-panel" role="dialog" aria-labelledby="edit-order-title">
       <div class="handle-panel-head">
         <div>
-          <p class="handle-eyebrow">অর্ডার এডিট</p>
-          <h2 id="edit-order-title">তথ্য আপডেট করুন</h2>
+          <p class="handle-eyebrow">EDIT ORDER</p>
+          <h2 id="edit-order-title">Update details</h2>
           <p class="handle-sub" id="edit-order-meta">#—</p>
         </div>
-        <button type="button" class="btn-close-modal" id="btn-close-edit-order" aria-label="বন্ধ">✕</button>
+        <button type="button" class="btn-close-modal" id="btn-close-edit-order" aria-label="Close">✕</button>
       </div>
       <form id="edit-order-form" class="manual-order-form edit-order-form">
         <input type="hidden" id="edit-order-id" />
         <label>
-          <span>নাম *</span>
+          <span>Name *</span>
           <input type="text" id="edit-order-name" required />
         </label>
         <label>
-          <span>মোবাইল *</span>
+          <span>Mobile *</span>
           <input type="tel" id="edit-order-phone" required />
         </label>
         <label class="full">
-          <span>ঠিকানা *</span>
+          <span>Address *</span>
           <input type="text" id="edit-order-address" required />
         </label>
         <label>
-          <span>Cable (ফুট) *</span>
+          <span>Cable (ft) *</span>
           <input type="number" id="edit-order-cable" min="1" max="500" required />
         </label>
         <label class="full">
-          <span>নোট</span>
+          <span>Note</span>
           <input type="text" id="edit-order-note" />
         </label>
-        <p class="edit-order-total">নতুন মোট: <strong id="edit-order-total">৳০</strong></p>
-        <button type="submit" class="btn-action-confirm">✓ সেভ করুন</button>
+        <p class="edit-order-total">New total: <strong id="edit-order-total">৳0</strong></p>
+        <button type="submit" class="btn-action-confirm">✓ Save</button>
       </form>
     </div>
   </div>
@@ -708,82 +718,82 @@
     <div class="handle-panel" role="dialog" aria-labelledby="handle-title">
       <div class="handle-panel-head">
         <div>
-          <p class="handle-eyebrow">অর্ডার কনফার্মড</p>
-          <h2 id="handle-title">এখন হ্যান্ডেল করুন</h2>
+          <p class="handle-eyebrow">ORDER CONFIRMED</p>
+          <h2 id="handle-title">Handle this order</h2>
           <p class="handle-sub" id="handle-order-meta">#—</p>
         </div>
-        <button type="button" class="btn-close-modal" id="btn-close-handle" aria-label="বন্ধ">✕</button>
+        <button type="button" class="btn-close-modal" id="btn-close-handle" aria-label="Close">✕</button>
       </div>
 
       <div class="handle-customer-card">
         <div class="handle-customer-row">
-          <span>নাম</span>
+          <span>Name</span>
           <strong id="handle-name">—</strong>
         </div>
         <div class="handle-customer-row">
-          <span>মোবাইল</span>
+          <span>Mobile</span>
           <strong id="handle-phone">—</strong>
         </div>
         <div class="handle-customer-row">
-          <span>ঠিকানা</span>
+          <span>Address</span>
           <strong id="handle-address">—</strong>
         </div>
         <div class="handle-customer-row">
-          <span>মোট বিল</span>
+          <span>Total bill</span>
           <strong class="handle-total" id="handle-total">—</strong>
         </div>
       </div>
 
       <ol class="handle-steps">
         <li>
-          <span class="handle-step-num">১</span>
+          <span class="handle-step-num">1</span>
           <div class="handle-step-body">
-            <strong>গ্রাহককে কল করুন</strong>
-            <p>অর্ডার ও ঠিকানা নিশ্চিত করুন</p>
-            <a class="btn-handle btn-handle-call" id="handle-btn-call" href="#">📞 এখনই কল করুন</a>
+            <strong>Call the customer</strong>
+            <p>Confirm order & address</p>
+            <a class="btn-handle btn-handle-call" id="handle-btn-call" href="#">📞 Call now</a>
           </div>
         </li>
         <li>
-          <span class="handle-step-num">২</span>
+          <span class="handle-step-num">2</span>
           <div class="handle-step-body">
-            <strong>WhatsApp কনফার্মেশন পাঠান</strong>
-            <p>রেডি মেসেজ অটো খুলবে</p>
-            <a class="btn-handle btn-handle-wa" id="handle-btn-wa" href="#" target="_blank" rel="noopener noreferrer">💬 WhatsApp পাঠান</a>
+            <strong>Send WhatsApp confirmation</strong>
+            <p>Ready message opens automatically</p>
+            <a class="btn-handle btn-handle-wa" id="handle-btn-wa" href="#" target="_blank" rel="noopener noreferrer">💬 Send WhatsApp</a>
           </div>
         </li>
         <li>
-          <span class="handle-step-num">৩</span>
+          <span class="handle-step-num">3</span>
           <div class="handle-step-body">
-            <strong>ঠিকানা / অর্ডার কপি করুন</strong>
-            <p>কুরিয়ার বা নোটের জন্য</p>
+            <strong>Copy address / order</strong>
+            <p>For courier or notes</p>
             <div class="handle-copy-row">
-              <button type="button" class="btn-handle btn-handle-copy" id="handle-btn-copy-address">📋 ঠিকানা কপি</button>
-              <button type="button" class="btn-handle btn-handle-copy" id="handle-btn-copy-full">📄 পুরো অর্ডার কপি</button>
+              <button type="button" class="btn-handle btn-handle-copy" id="handle-btn-copy-address">📋 Copy address</button>
+              <button type="button" class="btn-handle btn-handle-copy" id="handle-btn-copy-full">📄 Copy full order</button>
             </div>
           </div>
         </li>
         <li>
-          <span class="handle-step-num">৪</span>
+          <span class="handle-step-num">4</span>
           <div class="handle-step-body">
-            <strong>রশিদ প্রিন্ট করুন</strong>
-            <p>ডেলিভারির সাথে দিন</p>
-            <button type="button" class="btn-handle btn-handle-print" id="handle-btn-invoice">🖨 রশিদ খুলুন</button>
+            <strong>Print invoice</strong>
+            <p>Give with delivery</p>
+            <button type="button" class="btn-handle btn-handle-print" id="handle-btn-invoice">🖨 Open invoice</button>
           </div>
         </li>
         <li>
-          <span class="handle-step-num">৫</span>
+          <span class="handle-step-num">5</span>
           <div class="handle-step-body">
-            <strong>ডেলিভারি শেষ হলে</strong>
-            <p>স্ট্যাটাস আপডেট করুন</p>
-            <button type="button" class="btn-handle btn-handle-deliver" id="handle-btn-deliver">🚚 ডেলিভারি সম্পন্ন</button>
+            <strong>When delivery is done</strong>
+            <p>Update status</p>
+            <button type="button" class="btn-handle btn-handle-deliver" id="handle-btn-deliver">🚚 Mark delivered</button>
           </div>
         </li>
       </ol>
     </div>
   </div>
 
-  <script src="site-config.js?v=27"></script>
-  <script src="orders-api.js?v=27"></script>
-  <script src="admin.js?v=27"></script>
+  <script src="site-config.js?v=30"></script>
+  <script src="orders-api.js?v=30"></script>
+  <script src="admin.js?v=30"></script>
 </body>
 </html>

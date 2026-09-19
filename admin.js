@@ -55,7 +55,7 @@
 
   // Format Bangla Currency
   function formatBdt(amount) {
-    if (!Number.isFinite(amount)) return '৳০';
+    if (!Number.isFinite(amount)) return '৳0';
     return '৳' + Math.round(amount).toLocaleString('en-US');
   }
 
@@ -161,7 +161,7 @@
         } else {
           if (loginError) {
             loginError.hidden = false;
-            loginError.textContent = "❌ ভুল পাসওয়ার্ড! আবার চেষ্টা করুন।";
+            loginError.textContent = "Wrong password. Please try again.";
           }
           adminPassInput.focus();
           adminPassInput.select();
@@ -169,7 +169,7 @@
       } catch (err) {
         if (loginError) {
           loginError.hidden = false;
-          loginError.textContent = "❌ লগইন সমস্যা। পেজ রিফ্রেশ করে আবার চেষ্টা করুন।";
+          loginError.textContent = "Login error. Refresh the page and try again.";
         }
       }
     }
@@ -183,7 +183,7 @@
 
   if (btnLogout) {
     btnLogout.addEventListener('click', () => {
-      if (confirm('আপনি কি অ্যাডমিন প্যানেল থেকে লগআউট করতে চান?')) {
+      if (confirm('Sign out of the admin panel?')) {
         sessionStorage.removeItem('ai_controller_admin_auth');
         showLogin();
       }
@@ -219,13 +219,13 @@
       }
     } else {
       failMsg =
-        'লাইভে <code>site-config.js</code> নেই বা ordersApi খালি। GitHub-এ <code>site-config.js</code> আপলোড করুন। এখন ফোন Admin → <b>Copy JSON</b> → পিসি <b>Paste Import</b>।';
+        'Live site missing <code>site-config.js</code> or empty ordersApi. Upload <code>site-config.js</code> to GitHub. Now: phone Admin → <b>Copy JSON</b> → PC <b>Paste Import</b>.';
     }
 
     if (!cloudOk && bannerText) {
       bannerText.innerHTML =
         failMsg ||
-        'ক্লাউড Sync ব্যর্থ। Order Sync → <b>Test Sync</b> চাপুন। পুরনো অর্ডার: ফোন <b>Copy JSON</b> → পিসি <b>Paste Import</b>।';
+        'Cloud Sync failed. Go to Order Sync → <b>Test Sync</b>. Old orders: phone <b>Copy JSON</b> → PC <b>Paste Import</b>.';
     }
 
     const showWarn = !cloudOk;
@@ -332,7 +332,7 @@
 
       if (hasNewOrder) {
         playNotificationSound();
-        showToast('🔔 নতুন অর্ডার এসেছে! চেক করুন।', 'success');
+        showToast('🔔 New order received! Check it.', 'success');
       }
     }
 
@@ -399,23 +399,23 @@
     renderAll();
 
     if (nextStatus === 'confirmed') {
-      showToast(`অর্ডার #${orderId} কনফার্ম হয়েছে — হ্যান্ডেল প্যানেল খুলছে...`, 'success');
+      showToast(`Order #${orderId} confirmed — opening handle panel...`, 'success');
       setTimeout(() => openHandlePanel(orderId), 250);
     } else if (nextStatus === 'processing') {
-      showToast(`অর্ডার #${orderId} প্রসেসিং-এ আছে`, 'success');
+      showToast(`Order #${orderId} is processing`, 'success');
     } else if (nextStatus === 'ready_to_ship') {
-      showToast(`অর্ডার #${orderId} শিপমেন্টের জন্য রেডি`, 'success');
+      showToast(`Order #${orderId} ready to ship`, 'success');
     } else if (nextStatus === 'shipped') {
-      showToast(`অর্ডার #${orderId} শিপড হয়েছে`, 'success');
+      showToast(`Order #${orderId} marked shipped`, 'success');
     } else if (nextStatus === 'delivered') {
-      showToast(`অর্ডার #${orderId} ডেলিভারি সম্পন্ন চিহ্নিত হয়েছে।`, 'success');
+      showToast(`Order #${orderId} marked delivered.`, 'success');
     } else if (nextStatus === 'cancelled') {
-      showToast(`অর্ডার #${orderId} বাতিল করা হয়েছে।`, 'error');
+      showToast(`Order #${orderId} cancelled.`, 'error');
     }
   }
 
   async function deleteOrder(orderId) {
-    if (!confirm(`আপনি কি নিশ্চিত যে অর্ডার #${orderId} মুছে ফেলতে চান?`)) return;
+    if (!confirm(`Delete order #${orderId}?`)) return;
 
     try {
       if (window.OrdersAPI) {
@@ -430,7 +430,7 @@
       localStorage.setItem('ai_controller_orders', JSON.stringify(orders));
     } catch (e) {}
 
-    showToast(`অর্ডার #${orderId} মুছে ফেলা হয়েছে।`, 'info');
+    showToast(`Order #${orderId} deleted.`, 'info');
     renderAll();
   }
 
@@ -541,17 +541,17 @@
       if (ordersEmpty) {
         ordersEmpty.hidden = false;
         if (searchQuery) {
-          emptyMessage.textContent = `"${searchQuery}" এর সাথে মিলে এমন কোনো অর্ডার পাওয়া যায়নি।`;
+          emptyMessage.textContent = `No orders match "${searchQuery}".`;
         } else if (currentFilter === 'pending') {
-          emptyMessage.textContent = 'কোনো পেন্ডিং অর্ডার নেই।';
+          emptyMessage.textContent = 'No pending orders.';
         } else if (currentFilter === 'confirmed') {
-          emptyMessage.textContent = 'কোনো কনফার্মড অর্ডার নেই।';
+          emptyMessage.textContent = 'No confirmed orders.';
         } else if (currentFilter === 'delivered') {
-          emptyMessage.textContent = 'কোনো ডেলিভার্ড অর্ডার নেই।';
+          emptyMessage.textContent = 'No delivered orders.';
         } else if (currentFilter === 'cancelled') {
-          emptyMessage.textContent = 'কোনো বাতিল অর্ডার নেই।';
+          emptyMessage.textContent = 'No cancelled orders.';
         } else {
-          emptyMessage.textContent = 'এখনও কোনো গ্রাহক অর্ডার করেননি। গ্রাহক অর্ডার করলেই এখানে চলে আসবে।';
+          emptyMessage.textContent = 'No customer orders yet. New orders will appear here.';
         }
       }
       return;
@@ -569,28 +569,28 @@
     const totalPrice = Number(order.totalPrice) || (4500 + 1550 + cablePrice);
     const timeFormatted = formatDateTime(order.createdAt);
 
-    let statusBadgeText = 'পেন্ডিং';
+    let statusBadgeText = 'Pending';
     let badgeClass = 'badge-pending';
     if (status === 'confirmed') {
-      statusBadgeText = 'কনফার্মড';
+      statusBadgeText = 'Confirmed';
       badgeClass = 'badge-confirmed';
     } else if (status === 'processing') {
-      statusBadgeText = 'প্রসেসিং';
+      statusBadgeText = 'Processing';
       badgeClass = 'badge-processing';
     } else if (status === 'ready_to_ship') {
-      statusBadgeText = 'শিপ রেডি';
+      statusBadgeText = 'Ship ready';
       badgeClass = 'badge-ready';
     } else if (status === 'shipped') {
-      statusBadgeText = 'শিপড';
+      statusBadgeText = 'Shipped';
       badgeClass = 'badge-shipped';
     } else if (status === 'delivered') {
-      statusBadgeText = 'ডেলিভার্ড';
+      statusBadgeText = 'Delivered';
       badgeClass = 'badge-delivered';
     } else if (status === 'cancelled') {
-      statusBadgeText = 'বাতিল';
+      statusBadgeText = 'Cancelled';
       badgeClass = 'badge-cancelled';
     } else if (status === 'returned') {
-      statusBadgeText = 'রিটার্ন';
+      statusBadgeText = 'Returned';
       badgeClass = 'badge-cancelled';
     }
 
@@ -617,48 +617,48 @@
 
         <div class="order-card-body">
           <div class="customer-info-box">
-            <div class="info-box-title">👤 গ্রাহকের তথ্য</div>
+            <div class="info-box-title">👤 Customer info</div>
             <div class="info-row">
-              <strong>নাম:</strong> <span>${escapeHtml(order.name || '')}</span>
+              <strong>Name:</strong> <span>${escapeHtml(order.name || '')}</span>
             </div>
             <div class="info-row">
-              <strong>মোবাইল:</strong>
+              <strong>Mobile:</strong>
               <div class="customer-phone-wrap">
                 <span class="customer-phone-number">${escapeHtml(order.phone || '')}</span>
-                <a href="${telHref}" class="btn-phone-call" title="কল করুন">📞 কল</a>
-                <a href="${waHref}" target="_blank" rel="noopener noreferrer" class="btn-phone-wa" title="WhatsApp-এ মেসেজ">💬 WhatsApp</a>
+                <a href="${telHref}" class="btn-phone-call" title="Call">📞 Call</a>
+                <a href="${waHref}" target="_blank" rel="noopener noreferrer" class="btn-phone-wa" title="WhatsApp message">💬 WhatsApp</a>
               </div>
             </div>
             <div class="info-row">
-              <strong>ঠিকানা:</strong> <span>${escapeHtml(order.address || '')}</span>
+              <strong>Address:</strong> <span>${escapeHtml(order.address || '')}</span>
             </div>
             ${order.note ? `
               <div class="customer-note-badge">
-                <strong>নোট:</strong> ${escapeHtml(order.note)}
+                <strong>Note:</strong> ${escapeHtml(order.note)}
               </div>
             ` : ''}
           </div>
 
           <div class="package-info-box">
-            <div class="info-box-title">📦 পণ্যের বিবরণ</div>
+            <div class="info-box-title">📦 Product details</div>
             <div class="info-row">
-              <strong>ডিভাইস:</strong> <span>AI Controller + Premium Sensor</span>
+              <strong>Device:</strong> <span>AI Controller + Premium Sensor</span>
             </div>
             <div class="info-row">
-              <strong>Sensor Cable:</strong> <span>${cableFeet} ফুট (${formatBdt(cablePrice)})</span>
+              <strong>Sensor Cable:</strong> <span>${cableFeet} ft (${formatBdt(cablePrice)})</span>
             </div>
             <div class="info-row">
-              <strong>পেমেন্ট মাধ্যম:</strong> <span>ক্যাশ অন ডেলিভারি (COD)</span>
+              <strong>Payment:</strong> <span>Cash on Delivery (COD)</span>
             </div>
             <div class="info-row" style="margin-top: 0.5rem; padding-top: 0.45rem; border-top: 1px dashed #cbd5e1;">
-              <strong>সর্বমোট বিল:</strong>
+              <strong>Total bill:</strong>
               <span class="package-total-price">${formatBdt(totalPrice)}</span>
             </div>
             ${order.courierName || order.consignmentNo ? `
               <div class="confirmed-tag">
                 🚚 ${escapeHtml(order.courierName || 'Courier')}
                 ${order.consignmentNo ? ' · CN: <strong>' + escapeHtml(order.consignmentNo) + '</strong>' : ''}
-                ${order.courierCharge !== '' && order.courierCharge != null ? ' · চার্জ ' + formatBdt(Number(order.courierCharge) || 0) : ''}
+                ${order.courierCharge !== '' && order.courierCharge != null ? ' · Charge ' + formatBdt(Number(order.courierCharge) || 0) : ''}
               </div>
             ` : ''}
             ${order.steadfastTracking ? `
@@ -671,12 +671,12 @@
 
         ${(status === 'confirmed' || status === 'processing' || status === 'ready_to_ship') ? `
           <div class="confirmed-handle-bar">
-            <p class="confirmed-handle-title">হ্যান্ডেল টুলস</p>
+            <p class="confirmed-handle-title">Handle tools</p>
             <div class="confirmed-handle-actions">
-              <a class="btn-handle-mini btn-handle-call" href="${telHref}">📞 কল</a>
+              <a class="btn-handle-mini btn-handle-call" href="${telHref}">📞 Call</a>
               <a class="btn-handle-mini btn-handle-wa" href="${waHref}" target="_blank" rel="noopener noreferrer">💬 WhatsApp</a>
-              <button type="button" class="btn-handle-mini btn-handle-copy" onclick="window.adminActions.copyAddress('${order.id}')">📋 ঠিকানা</button>
-              <button type="button" class="btn-handle-mini btn-handle-print" onclick="window.adminActions.openInvoice('${order.id}')">🖨 রশিদ</button>
+              <button type="button" class="btn-handle-mini btn-handle-copy" onclick="window.adminActions.copyAddress('${order.id}')">📋 Address</button>
+              <button type="button" class="btn-handle-mini btn-handle-print" onclick="window.adminActions.openInvoice('${order.id}')">🖨 Invoice</button>
               <button type="button" class="btn-handle-mini btn-steadfast" onclick="window.adminActions.sendSteadfast('${order.id}')">Steadfast API</button>
               <button type="button" class="btn-handle-mini btn-courier-manual" onclick="window.adminActions.openCourier('${order.id}')">📝 Manual Courier</button>
             </div>
@@ -687,25 +687,25 @@
           <div class="actions-primary">
             ${status === 'pending' ? `
               <button type="button" class="btn-action-confirm" onclick="window.adminActions.confirmOrder('${order.id}')">✓ Confirm Order</button>
-              <button type="button" class="btn-action-cancel" onclick="window.adminActions.cancelOrder('${order.id}')">✕ বাতিল</button>
+              <button type="button" class="btn-action-cancel" onclick="window.adminActions.cancelOrder('${order.id}')">✕ Cancel</button>
             ` : ''}
 
             ${status === 'confirmed' ? `
               <button type="button" class="btn-action-confirm" onclick="window.adminActions.setStatus('${order.id}','processing')">→ Processing</button>
               <button type="button" class="btn-action-deliver" onclick="window.adminActions.openCourier('${order.id}')">📝 Manual Courier → Ship</button>
-              <button type="button" class="btn-action-cancel" onclick="window.adminActions.cancelOrder('${order.id}')">✕ বাতিল</button>
+              <button type="button" class="btn-action-cancel" onclick="window.adminActions.cancelOrder('${order.id}')">✕ Cancel</button>
             ` : ''}
 
             ${status === 'processing' ? `
               <button type="button" class="btn-action-confirm" onclick="window.adminActions.setStatus('${order.id}','ready_to_ship')">→ Ready to Ship</button>
               <button type="button" class="btn-action-deliver" onclick="window.adminActions.openCourier('${order.id}')">📝 Manual Courier → Ship</button>
-              <button type="button" class="btn-action-cancel" onclick="window.adminActions.cancelOrder('${order.id}')">✕ বাতিল</button>
+              <button type="button" class="btn-action-cancel" onclick="window.adminActions.cancelOrder('${order.id}')">✕ Cancel</button>
             ` : ''}
 
             ${status === 'ready_to_ship' ? `
               <button type="button" class="btn-action-deliver" onclick="window.adminActions.openCourier('${order.id}')">📝 Manual Courier → Shipped</button>
               <button type="button" class="btn-action-confirm btn-steadfast-main" onclick="window.adminActions.sendSteadfast('${order.id}')">🚚 Steadfast API</button>
-              <button type="button" class="btn-action-cancel" onclick="window.adminActions.cancelOrder('${order.id}')">✕ বাতিল</button>
+              <button type="button" class="btn-action-cancel" onclick="window.adminActions.cancelOrder('${order.id}')">✕ Cancel</button>
             ` : ''}
 
             ${status === 'shipped' ? `
@@ -714,19 +714,19 @@
             ` : ''}
 
             ${status === 'delivered' ? `
-              <span style="color: var(--blue); font-weight: 700; font-size: 0.88rem;">✓ ডেলিভারি সম্পন্ন</span>
+              <span style="color: var(--blue); font-weight: 700; font-size: 0.88rem;">✓ Delivered</span>
             ` : ''}
 
             ${status === 'cancelled' ? `
-              <span style="color: var(--rose); font-weight: 700; font-size: 0.88rem;">বাতিলকৃত অর্ডার</span>
-              <button type="button" class="btn-action-pending" onclick="window.adminActions.pendingOrder('${order.id}')">↩️ সক্রিয় করুন</button>
+              <span style="color: var(--rose); font-weight: 700; font-size: 0.88rem;">Cancelled order</span>
+              <button type="button" class="btn-action-pending" onclick="window.adminActions.pendingOrder('${order.id}')">↩️ Reactivate</button>
             ` : ''}
           </div>
 
           <div class="actions-secondary">
-            <button type="button" class="btn-action-print" onclick="window.adminActions.openEdit('${order.id}')" title="এডিট">✎ এডিট</button>
-            <button type="button" class="btn-action-print" onclick="window.adminActions.openInvoice('${order.id}')" title="প্রিন্ট রশিদ">🖨 রশিদ</button>
-            <button type="button" class="btn-action-delete" onclick="window.adminActions.deleteOrder('${order.id}')" title="অর্ডার মুছুন">🗑</button>
+            <button type="button" class="btn-action-print" onclick="window.adminActions.openEdit('${order.id}')" title="Edit">✎ Edit</button>
+            <button type="button" class="btn-action-print" onclick="window.adminActions.openInvoice('${order.id}')" title="Print invoice">🖨 Invoice</button>
+            <button type="button" class="btn-action-delete" onclick="window.adminActions.deleteOrder('${order.id}')" title="Delete order">🗑</button>
           </div>
         </div>
       </article>
@@ -757,14 +757,14 @@
     const cableFeet = Number(order.cableFeet) || 0;
     const totalPrice = Number(order.totalPrice) || 0;
     return (
-      `অর্ডার #${order.id}\n` +
-      `নাম: ${order.name || ''}\n` +
-      `মোবাইল: ${order.phone || ''}\n` +
-      `ঠিকানা: ${order.address || ''}\n` +
-      `প্যাকেজ: AI Controller + Premium Sensor\n` +
-      `ক্যাবল: ${cableFeet} ফুট\n` +
-      `মোট: ${formatBdt(totalPrice)} (COD)\n` +
-      (order.note ? `নোট: ${order.note}\n` : '')
+      `Order #${order.id}\n` +
+      `Name: ${order.name || ''}\n` +
+      `Mobile: ${order.phone || ''}\n` +
+      `Address: ${order.address || ''}\n` +
+      `Package: AI Controller + Premium Sensor\n` +
+      `Cable: ${cableFeet} ft\n` +
+      `Total: ${formatBdt(totalPrice)} (COD)\n` +
+      (order.note ? `Note: ${order.note}\n` : '')
     );
   }
 
@@ -780,9 +780,9 @@
         document.execCommand('copy');
         ta.remove();
       }
-      showToast(okMsg || 'কপি হয়েছে!', 'success');
+      showToast(okMsg || 'Copied!', 'success');
     } catch (e) {
-      showToast('কপি করা যায়নি। ম্যানুয়ালি সিলেক্ট করুন।', 'error');
+      showToast('Could not copy. Select manually.', 'error');
     }
   }
 
@@ -846,14 +846,14 @@
     handleBtnCopyAddress.addEventListener('click', () => {
       const order = orders.find(o => o.id === handleOrderId);
       if (!order) return;
-      copyText(order.address || '', 'ঠিকানা কপি হয়েছে!');
+      copyText(order.address || '', 'Address copied!');
     });
   }
   if (handleBtnCopyFull) {
     handleBtnCopyFull.addEventListener('click', () => {
       const order = orders.find(o => o.id === handleOrderId);
       if (!order) return;
-      copyText(buildOrderSummaryText(order), 'পুরো অর্ডার কপি হয়েছে!');
+      copyText(buildOrderSummaryText(order), 'Full order copied!');
     });
   }
   if (handleBtnInvoice) {
@@ -896,7 +896,7 @@
 
     document.getElementById('inv-id').textContent = '#' + order.id;
     document.getElementById('inv-date').textContent = formatDateTime(order.createdAt);
-    document.getElementById('inv-status').textContent = order.status === 'confirmed' ? 'কনফার্মড' : (order.status === 'delivered' ? 'ডেলিভার্ড' : 'পেন্ডিং');
+    document.getElementById('inv-status').textContent = order.status === 'confirmed' ? 'Confirmed' : (order.status === 'delivered' ? 'Delivered' : 'Pending');
     document.getElementById('inv-name').textContent = order.name || '';
     document.getElementById('inv-phone').textContent = order.phone || '';
     document.getElementById('inv-address').textContent = order.address || '';
@@ -965,7 +965,7 @@
     const courierChargeRaw = ((document.getElementById('courier-charge') || {}).value || '').trim();
     const shippingNote = ((document.getElementById('courier-note') || {}).value || '').trim();
     if (!id || !courierName || !consignmentNo) {
-      showToast('Courier Name ও Consignment No দিন', 'error');
+      showToast('Enter Courier Name and Consignment No', 'error');
       return;
     }
     const courierCharge = courierChargeRaw === '' ? '' : Number(courierChargeRaw) || 0;
@@ -1046,11 +1046,11 @@
     const note = ((document.getElementById('edit-order-note') || {}).value || '').trim();
     const feet = Number((document.getElementById('edit-order-cable') || {}).value);
     if (!id || !name || !phone || !address) {
-      showToast('নাম, মোবাইল ও ঠিকানা দিন', 'error');
+      showToast('Enter name, mobile and address', 'error');
       return;
     }
     if (!Number.isFinite(feet) || feet < 1) {
-      showToast('Cable সাইজ (ফুট) অবশ্যই দিতে হবে', 'error');
+      showToast('Cable size (ft) is required', 'error');
       return;
     }
     const prices = getPackagePrices();
@@ -1073,7 +1073,7 @@
         await window.OrdersAPI.updateOrderRemote(id, patch);
       }
     } catch (err) {
-      showToast('ক্লাউড আপডেট ব্যর্থ — লোকালে সেভ হচ্ছে', 'error');
+      showToast('Cloud update failed — saving locally', 'error');
     }
 
     orders = orders.map(o => (o.id === id ? Object.assign({}, o, patch) : o));
@@ -1082,7 +1082,7 @@
     } catch (err) {}
     closeEditOrder();
     renderAll();
-    showToast('অর্ডার আপডেট হয়েছে: #' + id, 'success');
+    showToast('Order updated: #' + id, 'success');
   }
 
   if (btnCloseEdit) btnCloseEdit.addEventListener('click', closeEditOrder);
@@ -1100,22 +1100,22 @@
   async function sendOrderToSteadfast(orderId) {
     const order = orders.find((o) => o.id === orderId);
     if (!order) {
-      showToast('অর্ডার পাওয়া যায়নি', 'error');
+      showToast('Order not found', 'error');
       return;
     }
     if (order.steadfastTracking) {
-      if (!confirm('এই অর্ডারে ইতিমধ্যে Tracking আছে: ' + order.steadfastTracking + '\nআবার পাঠাবেন?')) return;
-    } else if (!confirm('অর্ডার #' + orderId + ' Steadfast Courier-এ পাঠাবেন?')) {
+      if (!confirm('This order already has Tracking: ' + order.steadfastTracking + '\nSend again?')) return;
+    } else if (!confirm('Send order #' + orderId + ' to Steadfast Courier?')) {
       return;
     }
 
-    showToast('Steadfast-এ পাঠানো হচ্ছে...', 'info');
+    showToast('Sending to Steadfast...', 'info');
     try {
       if (!window.OrdersAPI || !window.OrdersAPI.sendOrderToSteadfast) {
-        throw new Error('orders-api.js আপডেট করুন');
+        throw new Error('Please update orders-api.js');
       }
       if (!window.OrdersAPI.hasCloudOrdersApi()) {
-        throw new Error('আগে Order Sync URL সেট করুন');
+        throw new Error('Set Order Sync URL first');
       }
       const result = await window.OrdersAPI.sendOrderToSteadfast(orderId, order);
       const tracking = (result && result.tracking) || (result.order && result.order.steadfastTracking) || '';
@@ -1143,7 +1143,7 @@
       setActiveFilter('shipped');
       renderAll();
       showToast(
-        tracking ? 'Steadfast OK · Tracking: ' + tracking : 'Steadfast-এ পাঠানো হয়েছে',
+        tracking ? 'Steadfast OK · Tracking: ' + tracking : 'Sent to Steadfast',
         'success'
       );
     } catch (err) {
@@ -1168,7 +1168,7 @@
       updateOrderStatus(id, 'pending');
     },
     cancelOrder(id) {
-      if (confirm(`আপনি কি নিশ্চিত যে অর্ডার #${id} বাতিল করতে চান?`)) {
+      if (confirm(`Cancel order #${id}?`)) {
         updateOrderStatus(id, 'cancelled');
       }
     },
@@ -1193,7 +1193,7 @@
     copyAddress(id) {
       const order = orders.find(o => o.id === id);
       if (!order) return;
-      copyText(order.address || '', 'ঠিকানা কপি হয়েছে!');
+      copyText(order.address || '', 'Address copied!');
     }
   };
 
@@ -1229,10 +1229,10 @@
 
   if (btnManualRefresh) {
     btnManualRefresh.addEventListener('click', () => {
-      btnManualRefresh.textContent = '⏳ চেক হচ্ছে...';
+      btnManualRefresh.textContent = '⏳ Checking...';
       fetchOrders(false).finally(() => {
         setTimeout(() => {
-          btnManualRefresh.textContent = '🔄 রিফ্রেশ';
+          btnManualRefresh.textContent = '🔄 Refresh';
         }, 500);
       });
     });
@@ -1242,7 +1242,7 @@
     btnSoundToggle.addEventListener('click', () => {
       soundEnabled = !soundEnabled;
       if (soundIcon) soundIcon.textContent = soundEnabled ? '🔊' : '🔇';
-      showToast(soundEnabled ? 'সাউন্ড নোটিফিকেশন চালু হয়েছে' : 'সাউন্ড নোটিফিকেশন বন্ধ করা হয়েছে', 'info');
+      showToast(soundEnabled ? 'Sound notifications on' : 'Sound notifications off', 'info');
     });
   }
 
@@ -1321,7 +1321,7 @@
           escapeHtml(r.id) +
           '">' +
           '<td>' +
-          escapeHtml(r.name || 'কাস্টমার') +
+          escapeHtml(r.name || 'Customer') +
           '</td>' +
           '<td class="comment-cell">' +
           escapeHtml(r.comment || '') +
@@ -1331,7 +1331,7 @@
           '</td>' +
           '<td><button type="button" class="btn-review-delete" data-del-comment="' +
           escapeHtml(r.id) +
-          '">🗑 ডিলিট</button></td>' +
+          '">🗑 Delete</button></td>' +
           '</tr>'
         );
       })
@@ -1351,7 +1351,7 @@
 
   async function deleteAdminComment(id) {
     if (!id) return;
-    if (!confirm('এই কমেন্ট মুছে ফেলবেন?')) return;
+    if (!confirm('Delete this comment?')) return;
 
     let cloudOk = false;
     try {
@@ -1367,7 +1367,7 @@
     addHiddenReviewId(id);
     adminComments = adminComments.filter((r) => String(r.id) !== String(id));
     renderAdminComments();
-    showToast(cloudOk ? 'কমেন্ট ডিলিট হয়েছে' : 'লোকাল থেকে ডিলিট হয়েছে', 'info');
+    showToast(cloudOk ? 'Comment deleted' : 'Deleted locally', 'info');
   }
 
   if (commentsBody) {
@@ -1382,7 +1382,7 @@
       btnRefreshComments.disabled = true;
       await fetchAdminComments();
       btnRefreshComments.disabled = false;
-      showToast('কমেন্ট রিফ্রেশ হয়েছে', 'success');
+      showToast('Comments refreshed', 'success');
     });
   }
 
@@ -1419,15 +1419,15 @@
           '<img src="' +
           escapeHtml(r.src) +
           '" alt="' +
-          escapeHtml(r.alt || 'রিভিউ') +
+          escapeHtml(r.alt || 'Review') +
           '" />' +
           '<div class="review-admin-meta">' +
           '<span>' +
-          escapeHtml(r.alt || 'কাস্টমার কমেন্ট') +
+          escapeHtml(r.alt || 'Customer comment') +
           '</span>' +
           '<button type="button" class="btn-review-delete" data-del="' +
           escapeHtml(r.id) +
-          '">🗑 মুছুন</button>' +
+          '">🗑 Remove</button>' +
           '</div></article>'
       )
       .join('');
@@ -1450,7 +1450,7 @@
     const cfgList = (window.SITE_CONFIG && window.SITE_CONFIG.reviews) || [];
     adminReviews = cfgList.map((src, i) =>
       typeof src === 'string'
-        ? { id: 'cfg-' + i, src, alt: 'কাস্টমার কমেন্ট' }
+        ? { id: 'cfg-' + i, src, alt: 'Customer comment' }
         : src
     );
     renderAdminReviews();
@@ -1461,17 +1461,17 @@
       e.preventDefault();
       const file = reviewFileInput.files && reviewFileInput.files[0];
       if (!file) {
-        showToast('আগে একটি স্ক্রিনশট সিলেক্ট করুন', 'error');
+        showToast('Select a screenshot first', 'error');
         return;
       }
       if (file.size > 8 * 1024 * 1024) {
-        showToast('ছবি ৮MB এর কম হতে হবে', 'error');
+        showToast('Image must be under 8MB', 'error');
         return;
       }
 
       if (btnUploadReview) {
         btnUploadReview.disabled = true;
-        btnUploadReview.textContent = '⏳ আপলোড হচ্ছে...';
+        btnUploadReview.textContent = '⏳ Uploading...';
       }
 
       try {
@@ -1487,28 +1487,28 @@
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             imageBase64: base64,
-            alt: (reviewAltInput && reviewAltInput.value) || 'কাস্টমার কমেন্ট'
+            alt: (reviewAltInput && reviewAltInput.value) || 'Customer comment'
           })
         });
 
         const json = await res.json();
         if (!res.ok || !json.success) {
-          throw new Error((json && json.error) || 'আপলোড ব্যর্থ');
+          throw new Error((json && json.error) || 'Upload failed');
         }
 
         adminReviews = json.reviews || [];
         renderAdminReviews();
         reviewUploadForm.reset();
-        showToast('কমেন্ট স্ক্রিনশট সাইটে যোগ হয়েছে!', 'success');
+        showToast('Review screenshot added to site!', 'success');
       } catch (err) {
         showToast(
-          'সার্ভার আপলোড ব্যর্থ। ছবি `assets/reviews/` এ রেখে site-config.js এ পাথ যোগ করুন।',
+          'Server upload failed. Put image in `assets/reviews/` and add path in site-config.js.',
           'error'
         );
       } finally {
         if (btnUploadReview) {
           btnUploadReview.disabled = false;
-          btnUploadReview.textContent = '✓ আপলোড ও সাইটে যোগ করুন';
+          btnUploadReview.textContent = '✓ Upload & Add to site';
         }
       }
     });
@@ -1519,17 +1519,17 @@
       const btn = e.target.closest('[data-del]');
       if (!btn) return;
       const id = btn.getAttribute('data-del');
-      if (!confirm('এই রিভিউ স্ক্রিনশট মুছে ফেলবেন?')) return;
+      if (!confirm('Delete this review screenshot?')) return;
       try {
         const res = await fetch(getReviewsApiUrl(encodeURIComponent(id)), { method: 'DELETE' });
         const json = await res.json();
         if (json.success) {
           adminReviews = json.reviews || [];
           renderAdminReviews();
-          showToast('রিভিউ মুছে ফেলা হয়েছে', 'info');
+          showToast('Review removed', 'info');
         }
       } catch (err) {
-        showToast('মুছতে ব্যর্থ — সার্ভার চালু আছে কি?', 'error');
+        showToast('Delete failed — is the server running?', 'error');
       }
     });
   }
@@ -1539,17 +1539,17 @@
   // ====================================================
   const PANEL_TITLES = {
     dashboard: 'Dashboard',
-    orders: 'অর্ডার ম্যানেজ',
+    orders: 'Orders',
     prices: 'Pricing',
     links: 'Contact Links',
     videos: 'Videos',
-    reviews: 'কমেন্ট / রিভিউ',
+    reviews: 'Comments / Reviews',
     cloud: 'Order Sync'
   };
 
   const PANEL_CRUMBS = {
     dashboard: 'Main / Dashboard',
-    orders: 'Main / অর্ডার ম্যানেজ',
+    orders: 'Main / Orders',
     prices: 'Website / Pricing',
     links: 'Website / Contact Links',
     videos: 'Website / Videos',
@@ -1844,12 +1844,12 @@
   if (cloudTestBtn) {
     cloudTestBtn.addEventListener('click', async () => {
       const ordersApi = ((document.getElementById('cloud-ordersApi') || {}).value || '').trim();
-      if (cloudTestResult) cloudTestResult.textContent = 'টেস্ট হচ্ছে...';
+      if (cloudTestResult) cloudTestResult.textContent = 'Testing...';
       cloudTestBtn.disabled = true;
       try {
         if (!window.OrdersAPI || !window.OrdersAPI.testCloudConnection) {
-          if (cloudTestResult) cloudTestResult.textContent = 'orders-api.js লোড হয়নি — পেজ রিফ্রেশ করুন';
-          showToast('orders-api.js লোড হয়নি', 'error');
+          if (cloudTestResult) cloudTestResult.textContent = 'orders-api.js not loaded — refresh the page';
+          showToast('orders-api.js not loaded', 'error');
           return;
         }
         const result = await window.OrdersAPI.testCloudConnection(ordersApi);
@@ -1868,29 +1868,81 @@
 
   const btnSteadfastStatus = document.getElementById('btn-steadfast-status');
   const steadfastStatusText = document.getElementById('steadfast-status-text');
+  const steadfastKeysForm = document.getElementById('steadfast-keys-form');
+  const btnSteadfastSave = document.getElementById('btn-steadfast-save');
+
+  async function refreshSteadfastStatus(showToastMsg) {
+    if (steadfastStatusText) steadfastStatusText.textContent = 'Checking...';
+    if (!window.OrdersAPI || !window.OrdersAPI.steadfastConfigured) {
+      throw new Error('orders-api.js is outdated — refresh the page');
+    }
+    if (!window.OrdersAPI.hasCloudOrdersApi()) {
+      throw new Error('Set Order Sync URL first');
+    }
+    const ok = await window.OrdersAPI.steadfastConfigured();
+    const msg = ok
+      ? '✅ Steadfast API Key set — you can send confirmed orders'
+      : '❌ API Key not set — paste keys below and Save';
+    if (steadfastStatusText) steadfastStatusText.textContent = msg;
+    if (showToastMsg) showToast(msg, ok ? 'success' : 'error');
+    return ok;
+  }
+
   if (btnSteadfastStatus) {
     btnSteadfastStatus.addEventListener('click', async () => {
-      if (steadfastStatusText) steadfastStatusText.textContent = 'চেক হচ্ছে...';
       btnSteadfastStatus.disabled = true;
       try {
-        if (!window.OrdersAPI || !window.OrdersAPI.steadfastConfigured) {
-          throw new Error('orders-api.js আপডেট নেই');
-        }
-        if (!window.OrdersAPI.hasCloudOrdersApi()) {
-          throw new Error('আগে Order Sync URL সেট করুন');
-        }
-        const ok = await window.OrdersAPI.steadfastConfigured();
-        const msg = ok
-          ? '✅ Steadfast API Key সেট আছে — কনফার্মড অর্ডারে পাঠাতে পারবেন'
-          : '❌ API Key সেট নেই — Apps Script এ setSteadfastCredentials Run করুন';
-        if (steadfastStatusText) steadfastStatusText.textContent = msg;
-        showToast(msg, ok ? 'success' : 'error');
+        await refreshSteadfastStatus(true);
       } catch (err) {
         const msg = '❌ ' + (err && err.message ? err.message : String(err));
         if (steadfastStatusText) steadfastStatusText.textContent = msg;
         showToast(msg, 'error');
       } finally {
         btnSteadfastStatus.disabled = false;
+      }
+    });
+  }
+
+  if (steadfastKeysForm) {
+    steadfastKeysForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const apiKey = ((document.getElementById('steadfast-api-key') || {}).value || '').trim();
+      const secretKey = ((document.getElementById('steadfast-secret-key') || {}).value || '').trim();
+      if (!apiKey || !secretKey) {
+        showToast('Enter both API Key and Secret Key', 'error');
+        return;
+      }
+      if (btnSteadfastSave) {
+        btnSteadfastSave.disabled = true;
+        btnSteadfastSave.textContent = 'Saving...';
+      }
+      if (steadfastStatusText) steadfastStatusText.textContent = 'Saving keys on server...';
+      try {
+        if (!window.OrdersAPI || !window.OrdersAPI.setSteadfastCredentials) {
+          throw new Error('orders-api.js is outdated — refresh the page');
+        }
+        if (!window.OrdersAPI.hasCloudOrdersApi()) {
+          throw new Error('Set Order Sync URL first');
+        }
+        await window.OrdersAPI.setSteadfastCredentials(apiKey, secretKey);
+        const apiInput = document.getElementById('steadfast-api-key');
+        const secretInput = document.getElementById('steadfast-secret-key');
+        if (apiInput) apiInput.value = '';
+        if (secretInput) secretInput.value = '';
+        showToast('Steadfast API keys saved', 'success');
+        await refreshSteadfastStatus(false);
+        if (steadfastStatusText) {
+          steadfastStatusText.textContent = '✅ Keys saved securely — ready to send orders';
+        }
+      } catch (err) {
+        const msg = '❌ ' + (err && err.message ? err.message : String(err));
+        if (steadfastStatusText) steadfastStatusText.textContent = msg;
+        showToast(msg, 'error');
+      } finally {
+        if (btnSteadfastSave) {
+          btnSteadfastSave.disabled = false;
+          btnSteadfastSave.textContent = 'Save API Keys';
+        }
       }
     });
   }
@@ -1910,11 +1962,11 @@
       const cablePrice = (Number.isFinite(feet) ? feet : 0) * prices.cablePerFoot;
       const total = ctrl + sensor + cablePrice;
       if (!name || !phone || !address) {
-        showToast('নাম, মোবাইল ও ঠিকানা দিন', 'error');
+        showToast('Enter name, mobile and address', 'error');
         return;
       }
       if (!Number.isFinite(feet) || feet < 1) {
-        showToast('Cable সাইজ (ফুট) অবশ্যই দিতে হবে', 'error');
+        showToast('Cable size (ft) is required', 'error');
         return;
       }
       const payload = {
@@ -1945,14 +1997,14 @@
       manualForm.reset();
       setActiveFilter('pending');
       renderAll();
-      showToast('ম্যানুয়াল অর্ডার যোগ হয়েছে: #' + created.id, 'success');
+      showToast('Manual order added: #' + created.id, 'success');
     });
   }
 
   function exportOrdersFile() {
     const list = orders.length ? orders : readLocalOrders();
     if (!list.length) {
-      showToast('Export করার মতো কোনো অর্ডার নেই', 'error');
+      showToast('No orders to export', 'error');
       return;
     }
     const blob = new Blob([JSON.stringify(list, null, 2)], { type: 'application/json;charset=utf-8' });
@@ -1964,13 +2016,13 @@
     a.click();
     a.remove();
     URL.revokeObjectURL(url);
-    showToast(list.length + 'টি অর্ডার Export হয়েছে — পিসিতে Import করুন', 'success');
+    showToast(list.length + ' orders exported — Import on PC', 'success');
   }
 
   async function copyOrdersJson() {
     const list = orders.length ? orders : readLocalOrders();
     if (!list.length) {
-      showToast('Copy করার মতো কোনো অর্ডার নেই', 'error');
+      showToast('No orders to copy', 'error');
       return;
     }
     const text = JSON.stringify(list);
@@ -1985,20 +2037,20 @@
         document.execCommand('copy');
         ta.remove();
       }
-      showToast('JSON কপি হয়েছে — পিসিতে Paste Import করুন', 'success');
+      showToast('JSON copied — Paste Import on PC', 'success');
     } catch (e) {
-      showToast('কপি ব্যর্থ। Export ব্যবহার করুন।', 'error');
+      showToast('Copy failed. Use Export.', 'error');
     }
   }
 
   function importOrdersList(list) {
     if (!Array.isArray(list) || !list.length) {
-      showToast('সঠিক অর্ডার লিস্ট পাওয়া যায়নি', 'error');
+      showToast('Valid order list not found', 'error');
       return;
     }
     const cleaned = list.filter(o => o && o.id);
     if (!cleaned.length) {
-      showToast('ইমপোর্ট ফাইলে অর্ডার নেই', 'error');
+      showToast('No orders in import file', 'error');
       return;
     }
     orders = mergeOrders(cleaned, orders);
@@ -2008,7 +2060,7 @@
     previousOrderIds = new Set(orders.map(o => o.id));
     setActiveFilter('all');
     renderAll();
-    showToast(cleaned.length + 'টি অর্ডার Import হয়েছে', 'success');
+    showToast(cleaned.length + ' orders imported', 'success');
   }
 
   const btnExportOrders = document.getElementById('btn-export-orders');
@@ -2023,15 +2075,15 @@
   if (btnRefreshOrders) {
     btnRefreshOrders.addEventListener('click', async () => {
       btnRefreshOrders.disabled = true;
-      btnRefreshOrders.textContent = '↻ লোড হচ্ছে...';
+      btnRefreshOrders.textContent = '↻ Loading...';
       try {
         await fetchOrders(false);
-        showToast('অর্ডার রিফ্রেশ হয়েছে', 'success');
+        showToast('Orders refreshed', 'success');
       } catch (err) {
-        showToast('রিফ্রেশ ব্যর্থ', 'error');
+        showToast('Refresh failed', 'error');
       } finally {
         btnRefreshOrders.disabled = false;
-        btnRefreshOrders.textContent = '↻ রিফ্রেশ';
+        btnRefreshOrders.textContent = '↻ Refresh';
       }
     });
   }
@@ -2045,7 +2097,7 @@
         const parsed = JSON.parse(text);
         importOrdersList(Array.isArray(parsed) ? parsed : (parsed.orders || []));
       } catch (e) {
-        showToast('JSON ফাইল পড়া যায়নি', 'error');
+        showToast('Could not read JSON file', 'error');
       }
       importOrdersFile.value = '';
     });
@@ -2056,7 +2108,7 @@
       const ta = document.getElementById('import-orders-text');
       const raw = (ta && ta.value || '').trim();
       if (!raw) {
-        showToast('আগে JSON পেস্ট করুন', 'error');
+        showToast('Paste JSON first', 'error');
         return;
       }
       try {
@@ -2064,7 +2116,7 @@
         importOrdersList(Array.isArray(parsed) ? parsed : (parsed.orders || []));
         if (ta) ta.value = '';
       } catch (e) {
-        showToast('JSON সঠিক নয়', 'error');
+        showToast('Invalid JSON', 'error');
       }
     });
   }

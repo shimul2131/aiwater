@@ -220,6 +220,9 @@
     steps.forEach((li, i) => {
       li.classList.toggle("is-current", i === stepNum - 1);
     });
+    const details = document.getElementById("order-form-container");
+    // Step 1 = package only — hide order info until Order Now
+    if (details) details.hidden = stepNum < 2;
   }
 
   function goToOrderForm(e) {
@@ -233,9 +236,16 @@
     const form = document.getElementById("customer-order-form");
     const successCard = document.getElementById("order-success-card");
     const nameInput = document.getElementById("order-customer-name");
+    const chip = document.getElementById("order-cable-chip");
 
     if (successCard) successCard.hidden = true;
     if (form) form.hidden = false;
+    if (box) box.hidden = false;
+    if (chip) {
+      chip.hidden = false;
+      const strong = chip.querySelector("strong");
+      if (strong) strong.textContent = String(feet);
+    }
     setOrderFlowStep(2);
 
     const target = box || combo;

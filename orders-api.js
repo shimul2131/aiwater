@@ -276,6 +276,17 @@
     }
   }
 
+  async function setSteadfastCredentials(apiKey, secretKey) {
+    if (!isCloudOrdersApi()) throw new Error("Set Order Sync URL first");
+    const json = await cloudPost({
+      action: "setSteadfastCredentials",
+      apiKey: String(apiKey || "").trim(),
+      secretKey: String(secretKey || "").trim(),
+    });
+    if (json && json.success) return json;
+    throw new Error((json && json.error) || "Failed to save Steadfast keys");
+  }
+
   window.OrdersAPI = {
     getConfiguredOrdersApi,
     getOrdersApiUrl,
@@ -291,5 +302,6 @@
     deleteReviewRemote,
     sendOrderToSteadfast,
     steadfastConfigured,
+    setSteadfastCredentials,
   };
 })();

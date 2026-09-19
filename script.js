@@ -1,9 +1,8 @@
 (() => {
   const nav = document.getElementById("site-nav");
   const toggle = document.querySelector(".nav-toggle");
-  const whatsappURL =
-    "https://wa.me/8801745242000?text=" +
-    encodeURIComponent("আমি AI Water Controller সম্পর্কে বিস্তারিত জানতে চাই।");
+  // Open chat only — no auto prefilled message
+  const whatsappURL = "https://wa.me/8801745242000";
 
   if (toggle && nav) {
     toggle.addEventListener("click", () => {
@@ -24,7 +23,8 @@
   }
 
   document.querySelectorAll('a[href*="wa.me/8801745242000"]').forEach((el) => {
-    if (el.id === "calc-order-btn") return;
+    // Keep order / tracking WhatsApp messages set by site-content.js
+    if (el.id === "calc-order-btn" || el.id === "success-whatsapp-btn" || el.id === "calc-whatsapp-btn") return;
     el.setAttribute("href", whatsappURL);
   });
 
