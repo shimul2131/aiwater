@@ -566,7 +566,7 @@
     const status = order.status || 'pending';
     const cableFeet = Number(order.cableFeet) || 0;
     const cablePrice = Number(order.cablePrice) || (cableFeet * 8);
-    const totalPrice = Number(order.totalPrice) || (4500 + 1550 + cablePrice);
+    const totalPrice = Number(order.totalPrice) || (4250 + 1550 + cablePrice);
     const timeFormatted = formatDateTime(order.createdAt);
 
     let statusBadgeText = 'Pending';
@@ -804,7 +804,7 @@
 
     handleOrderId = orderId;
     const cableFeet = Number(order.cableFeet) || 0;
-    const totalPrice = Number(order.totalPrice) || (4500 + 1550 + cableFeet * 8);
+    const totalPrice = Number(order.totalPrice) || (4250 + 1550 + cableFeet * 8);
     const cleanPhone = getCleanPhone(order.phone);
     const waHref = 'https://wa.me/' + cleanPhone + '?text=' + encodeURIComponent(buildWaConfirmText(order));
     const telHref = 'tel:' + (order.phone || '');
@@ -892,7 +892,7 @@
 
     const cableFeet = Number(order.cableFeet) || 0;
     const cablePrice = Number(order.cablePrice) || (cableFeet * 8);
-    const totalPrice = Number(order.totalPrice) || (4500 + 1550 + cablePrice);
+    const totalPrice = Number(order.totalPrice) || (4250 + 1550 + cablePrice);
 
     document.getElementById('inv-id').textContent = '#' + order.id;
     document.getElementById('inv-date').textContent = formatDateTime(order.createdAt);
@@ -909,7 +909,7 @@
       noteRow.hidden = true;
     }
 
-    document.getElementById('inv-ctrl-price').textContent = formatBdt(order.controllerPrice || 4500);
+    document.getElementById('inv-ctrl-price').textContent = formatBdt(order.controllerPrice || 4250);
     document.getElementById('inv-sensor-price').textContent = formatBdt(order.sensorPrice || 1550);
     document.getElementById('inv-cable-feet').textContent = String(cableFeet);
     document.getElementById('inv-cable-feet-2').textContent = String(cableFeet);
@@ -998,7 +998,7 @@
     const cfg = window.SITE_CONFIG || {};
     const p = cfg.prices || {};
     return {
-      controller: Number(p.controller) || 4500,
+      controller: Number(p.controller) || 4250,
       sensor: Number(p.sensor) || 1550,
       cablePerFoot: Number(p.cablePerFoot) || 8
     };
@@ -1630,7 +1630,7 @@
       appDetails: (videoInputs.appDetails && videoInputs.appDetails.value || '').trim()
     };
     const prices = {
-      controller: Number((document.getElementById('price-controller') || {}).value) || Number((cfg.prices || {}).controller) || 4500,
+      controller: Number((document.getElementById('price-controller') || {}).value) || Number((cfg.prices || {}).controller) || 4250,
       sensor: Number((document.getElementById('price-sensor') || {}).value) || Number((cfg.prices || {}).sensor) || 1550,
       cablePerFoot: Number((document.getElementById('price-cable') || {}).value) || Number((cfg.prices || {}).cablePerFoot) || 8
     };
@@ -1655,14 +1655,31 @@
       if (videoInputs[key]) videoInputs[key].value = videos[key] || '';
     });
 
-    const prices = cfg.prices || {};
+    let prices = Object.assign({}, cfg.prices || {});
+    try {
+      const savedPrices = localStorage.getItem('ai_controller_prices');
+      if (savedPrices) prices = Object.assign(prices, JSON.parse(savedPrices));
+    } catch (e) {}
     const pc = document.getElementById('price-controller');
     const ps = document.getElementById('price-sensor');
     const pcf = document.getElementById('price-cable');
-    if (pc) pc.value = prices.controller != null ? prices.controller : 4500;
+    if (pc) pc.value = prices.controller != null ? prices.controller : 4250;
     if (ps) ps.value = prices.sensor != null ? prices.sensor : 1550;
     if (pcf) pcf.value = prices.cablePerFoot != null ? prices.cablePerFoot : 8;
     updatePricePreview();
+    if (window.OrdersAPI && window.OrdersAPI.fetchPrices && window.OrdersAPI.hasCloudOrdersApi()) {
+      window.OrdersAPI.fetchPrices().then((remote) => {
+        if (!remote) return;
+        if (pc) pc.value = remote.controller;
+        if (ps) ps.value = remote.sensor;
+        if (pcf) pcf.value = remote.cablePerFoot;
+        if (window.SITE_CONFIG) window.SITE_CONFIG.prices = remote;
+        try {
+          localStorage.setItem('ai_controller_prices', JSON.stringify(remote));
+        } catch (e) {}
+        updatePricePreview();
+      }).catch(() => {});
+    }
 
     const links = cfg.links || {};
     const lp = document.getElementById('link-playStore');
@@ -1749,7 +1766,7 @@
       '    poster: ' + q(images.poster || 'assets/promo-poster.png') + ',\n' +
       '  },\n' +
       '  prices: {\n' +
-      '    controller: ' + Number(prices.controller || 4500) + ',\n' +
+      '    controller: ' + Number(prices.controller || 4250) + ',\n' +
       '    sensor: ' + Number(prices.sensor || 1550) + ',\n' +
       '    cablePerFoot: ' + Number(prices.cablePerFoot || 8) + ',\n' +
       '  },\n' +
@@ -1808,14 +1825,40 @@
   }
 
   if (pricesForm) {
-    pricesForm.addEventListener('submit', (e) => {
+    pricesForm.addEventListener('submit', async (e) => {
       e.preventDefault();
       const prices = {
         controller: Number((document.getElementById('price-controller') || {}).value) || 0,
         sensor: Number((document.getElementById('price-sensor') || {}).value) || 0,
         cablePerFoot: Number((document.getElementById('price-cable') || {}).value) || 0
       };
-      saveConfigAndDownload({ prices }, 'Prices saved — upload site-config.js');
+      const btn = document.getElementById('btn-save-prices');
+      if (btn) {
+        btn.disabled = true;
+        btn.textContent = 'Saving...';
+      }
+      try {
+        if (!window.OrdersAPI || !window.OrdersAPI.savePrices) {
+          throw new Error('orders-api.js is outdated — refresh the page');
+        }
+        if (!window.OrdersAPI.hasCloudOrdersApi()) {
+          throw new Error('Set Order Sync URL first');
+        }
+        const saved = await window.OrdersAPI.savePrices(prices);
+        const next = saved || prices;
+        if (window.SITE_CONFIG) window.SITE_CONFIG.prices = next;
+        try {
+          localStorage.setItem('ai_controller_prices', JSON.stringify(next));
+        } catch (err) {}
+        showToast('Prices saved — website will show new prices (no upload needed)', 'success');
+      } catch (err) {
+        showToast('❌ ' + (err && err.message ? err.message : String(err)), 'error');
+      } finally {
+        if (btn) {
+          btn.disabled = false;
+          btn.textContent = '✓ Save Prices';
+        }
+      }
     });
   }
 

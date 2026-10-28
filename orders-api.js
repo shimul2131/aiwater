@@ -276,6 +276,52 @@
     }
   }
 
+  function normalizePrices(p) {
+    if (!p || typeof p !== "object") return null;
+    const controller = Number(p.controller);
+    const sensor = Number(p.sensor);
+    const cablePerFoot = Number(p.cablePerFoot);
+    if (![controller, sensor, cablePerFoot].every(Number.isFinite)) return null;
+    return { controller, sensor, cablePerFoot };
+  }
+
+  async function fetchPrices() {
+    if (!isCloudOrdersApi()) return null;
+    const url = getOrdersApiUrl().replace(/\/$/, "");
+    try {
+      const res = await fetch(url + (url.includes("?") ? "&" : "?") + "type=prices&_=" + Date.now(), {
+        method: "GET",
+        cache: "no-store",
+        redirect: "follow",
+        mode: "cors",
+      });
+      const json = await parseJsonFromResponse(res);
+      if (json && json.success) {
+        const prices = normalizePrices(json.prices);
+        if (prices) return prices;
+      }
+    } catch (e) {}
+    try {
+      const json = await cloudPost({ action: "getPrices" });
+      if (json && json.success) return normalizePrices(json.prices);
+    } catch (e) {}
+    return null;
+  }
+
+  async function savePrices(pricesInput) {
+    if (!isCloudOrdersApi()) throw new Error("Set Order Sync URL first");
+    const prices = normalizePrices(pricesInput);
+    if (!prices) throw new Error("Enter valid prices");
+    const json = await cloudPost({
+      action: "setPrices",
+      controller: prices.controller,
+      sensor: prices.sensor,
+      cablePerFoot: prices.cablePerFoot,
+    });
+    if (json && json.success && json.prices) return normalizePrices(json.prices) || prices;
+    throw new Error((json && json.error) || "Failed to save prices");
+  }
+
   async function setSteadfastCredentials(apiKey, secretKey) {
     if (!isCloudOrdersApi()) throw new Error("Set Order Sync URL first");
     const json = await cloudPost({
@@ -303,5 +349,7 @@
     sendOrderToSteadfast,
     steadfastConfigured,
     setSteadfastCredentials,
+    fetchPrices,
+    savePrices,
   };
 })();

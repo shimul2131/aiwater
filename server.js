@@ -234,7 +234,7 @@ const server = http.createServer(async (req, res) => {
       const note = (data.note || '').trim();
       const cableFeet = Number(data.cableFeet) || 0;
       const totalPrice = Number(data.totalPrice) || 0;
-      const controllerPrice = Number(data.controllerPrice) || 4500;
+      const controllerPrice = Number(data.controllerPrice) || 4250;
       const sensorPrice = Number(data.sensorPrice) || 1550;
       const cablePrice = Number(data.cablePrice) || (cableFeet * 8);
 

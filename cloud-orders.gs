@@ -8,6 +8,7 @@
  * 4) Deploy → Web app → Anyone → Deploy → /exec URL কপি
  * 5) Admin → Order Sync এ URL → Test Sync → site-config.js আপলোড
  * 6) Admin → Steadfast → API Key + Secret Key সেভ
+ * 7) Admin → Pricing → Save (ফাইল আপলোড লাগে না)
  *
  * কোড বদলালে: Manage deployments → New version → Deploy
  */
@@ -49,6 +50,38 @@ function saveSteadfastKeys_(apiKey, secretKey) {
     STEADFAST_API_KEY: apiKey,
     STEADFAST_SECRET_KEY: secretKey
   });
+}
+
+function defaultPrices_() {
+  return { controller: 4250, sensor: 1550, cablePerFoot: 8 };
+}
+
+function getPrices_() {
+  var raw = PropertiesService.getScriptProperties().getProperty('SITE_PRICES');
+  if (!raw) return defaultPrices_();
+  try {
+    var p = JSON.parse(raw);
+    return {
+      controller: Number(p.controller) || 4250,
+      sensor: Number(p.sensor) || 1550,
+      cablePerFoot: Number(p.cablePerFoot) || 8
+    };
+  } catch (e) {
+    return defaultPrices_();
+  }
+}
+
+function savePrices_(body) {
+  var p = {
+    controller: Number(body.controller),
+    sensor: Number(body.sensor),
+    cablePerFoot: Number(body.cablePerFoot)
+  };
+  if (!isFinite(p.controller) || p.controller < 0) throw new Error('Invalid controller price');
+  if (!isFinite(p.sensor) || p.sensor < 0) throw new Error('Invalid sensor price');
+  if (!isFinite(p.cablePerFoot) || p.cablePerFoot < 0) throw new Error('Invalid cable price');
+  PropertiesService.getScriptProperties().setProperty('SITE_PRICES', JSON.stringify(p));
+  return p;
 }
 
 function steadfastStatus() {
@@ -234,6 +267,10 @@ function parseBody_(e) {
 function doGet(e) {
   try {
     var kind = (e && e.parameter && e.parameter.type) ? String(e.parameter.type) : 'orders';
+    var action = (e && e.parameter && e.parameter.action) ? String(e.parameter.action) : '';
+    if (kind === 'prices' || action === 'getPrices') {
+      return jsonOut_({ success: true, prices: getPrices_() });
+    }
     if (kind === 'reviews') {
       var reviews = rowsToReviews_(getReviewsSheet_());
       return jsonOut_({ success: true, reviews: reviews });
@@ -250,6 +287,20 @@ function doPost(e) {
   try {
     var body = parseBody_(e);
     var action = body.action || 'create';
+
+    if (action === 'getPrices') {
+      return jsonOut_({ success: true, prices: getPrices_() });
+    }
+
+    if (action === 'setPrices') {
+      try {
+        var savedPrices = savePrices_(body);
+      } catch (priceErr) {
+        return jsonOut_({ success: false, error: String(priceErr.message || priceErr) });
+      }
+      return jsonOut_({ success: true, prices: savedPrices, message: 'Prices saved' });
+    }
+
     var sheet = getSheet_();
 
     if (action === 'list') {

@@ -26,7 +26,7 @@ window.SITE_CONFIG = {
     poster: "assets/promo-poster.png",
   },
   prices: {
-    controller: 4500,
+    controller: 4250,
     sensor: 1550,
     cablePerFoot: 8,
   },

@@ -69,7 +69,14 @@
     const savedVideos = localStorage.getItem("ai_controller_videos");
     if (savedVideos) Object.assign(videos, JSON.parse(savedVideos));
   } catch (e) {}
-  const prices = cfg.prices || {};
+  const prices = Object.assign(
+    { controller: 4250, sensor: 1550, cablePerFoot: 8 },
+    cfg.prices || {}
+  );
+  try {
+    const savedPrices = localStorage.getItem("ai_controller_prices");
+    if (savedPrices) Object.assign(prices, JSON.parse(savedPrices));
+  } catch (e) {}
   const linksCfg = cfg.links || {};
 
   function getWhatsAppNumber() {
@@ -296,13 +303,15 @@
     }
   }
 
+  let recalcPrices = function () {};
+
   let currentCalcState = {
-    ctrl: 4500,
+    ctrl: 4250,
     sensorPrice: 1550,
     perFoot: 8,
     feet: 0,
     cableTotal: 0,
-    total: 6050
+    total: 5800
   };
 
   function initPriceCalculator() {
@@ -381,6 +390,7 @@
           "https://wa.me/" + getWhatsAppNumber() + "?text=" + encodeURIComponent(msg);
       }
     }
+    recalcPrices = recalc;
 
     const optionsWrap = document.querySelector(".cable-feet-options");
     if (optionsWrap) {
@@ -629,6 +639,31 @@
   initPriceCalculator();
   initCustomerOrderForm();
   initOrderFormLinks();
+
+  (async function loadCloudPrices() {
+    if (!window.OrdersAPI || !window.OrdersAPI.fetchPrices) return;
+    try {
+      const remote = await window.OrdersAPI.fetchPrices();
+      if (!remote) return;
+      prices.controller = Number(remote.controller);
+      prices.sensor = Number(remote.sensor);
+      prices.cablePerFoot = Number(remote.cablePerFoot);
+      try {
+        localStorage.setItem("ai_controller_prices", JSON.stringify({
+          controller: prices.controller,
+          sensor: prices.sensor,
+          cablePerFoot: prices.cablePerFoot
+        }));
+      } catch (e) {}
+      if (window.SITE_CONFIG) window.SITE_CONFIG.prices = {
+        controller: prices.controller,
+        sensor: prices.sensor,
+        cablePerFoot: prices.cablePerFoot
+      };
+      applyPrices();
+      recalcPrices();
+    } catch (e) {}
+  })();
 
   setProductImage("home-controller-img", images.controller, images.controllerFallback);
   setProductImage("pkg-controller-img", images.controller, images.controllerFallback);
